@@ -2,19 +2,23 @@ FROM python:3.11.5-slim
 
 WORKDIR /app
 
-# Системные зависимости для компиляции llama-cpp-python
+# Устанавливаем системные зависимости + утилиту wget для скачивания модели
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
     gcc \
     g++ \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
-# Копируем и устанавливаем полный список зависимостей
+# Создаем папку под модель и скачиваем Qwen 2.5 напрямую с Hugging Face
+RUN mkdir -p /app/models && \
+    wget -O /app/models/qwen2.5-0.5b-instruct-q4_k_m.gguf \
+    https://huggingface.co
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir --default-timeout=100 -r requirements.txt
 
-# Копируем исходный код проекта
 COPY . .
 
 EXPOSE 8000
