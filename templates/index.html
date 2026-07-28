@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Guess the word</title>
+<link href="https://fonts.googleapis.com/css2?family=Macondo+Swash+Caps&amp;display=swap" rel="stylesheet"/>
+<link href="/static/css/styles.css" rel="stylesheet"/>
+<link href="/static/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+</head>
+<body>
+<div class="comm-header">Guess the word</div>
+<div class="login-container">
+<form action="/users/auth" class="login-form" method="POST">
+<h2>{{ index_txt_1 }}</h2>
+<input class="login-input" id="username" name="username" placeholder="{{ index_username_placeholder }}" required="" type="text" autocomplete="current-login"/>
+<input class="login-input" id="password" name="password" placeholder="{{ index_password_placeholder }}" required="" type="password" autocomplete="current-password"/>
+<div class="radio-group">
+  <div class="radio-item">
+    <input type="radio" id="en" name="lang" value="en" checked>
+    <label for="en">English</label>
+  </div>
+  <div class="radio-item">
+    <input type="radio" id="fr" name="lang" value="fr">
+    <label for="fr">Français</label>
+  </div>
+  <div class="radio-item">
+    <input type="radio" id="ru" name="lang" value="ru">
+    <label for="ru">Русский</label>
+  </div>
+</div>
+
+<button class="login-button" type="submit">{{ index_txt_4 }}</button>
+<p class="flash_msg">{{ flash_msg }}</p>
+</form>
+<div class="reglink"><a href="/users/reg">{{ index_txt_5 }}</a></div>
+</div>
+</body>
+</html> 

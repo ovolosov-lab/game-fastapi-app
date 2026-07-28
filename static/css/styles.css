@@ -1,0 +1,209 @@
+body {
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+  justify-content: flex-start;
+  align-items: center;
+  height: 100vh;
+  background-color: #f0f2f5;
+  font-family: Arial, sans-serif;
+  padding-top: 30px;
+}
+
+.comm-header {
+    color:rgb(79 70 229);
+    text-align: center;  
+    font-family: "Macondo Swash Caps", cursive;
+    font-size: 4.8rem;    
+}
+
+.login-container {
+  background-color: #fff;
+  padding: 40px;
+  border-radius: 30px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  width: 350px;
+}
+
+@media (max-width: 768px) {
+  .comm-header {
+     font-size: 2.6rem; 
+  }
+
+  .login-container {
+    width:75%;
+  }
+}
+.login-form h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+.login-input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-sizing: border-box; /* Важно для паддингов */
+  transition: border-color 0.3s;
+}
+
+.login-input:focus {
+  border-color: rgb(79 70 229);
+  outline: none;
+}
+
+.login-button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background-color: rgb(79 70 229);
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.login-button:hover {
+  background-color: #0056b3;
+}
+
+.reglink{
+    width:100%;
+    padding-top:10px;
+    text-align:right;
+}
+.reglink a {
+    color: rgb(79 70 229);
+    text-decoration: none;
+    font-size: 0.8rem;
+}
+.reglink a:hover {
+    text-decoration: underline;
+    color:#0056b3
+}
+
+@media (max-width: 768px) {
+  body {
+    height: 95vh;
+  }
+
+  .comm-header {
+     font-size: 2.8rem; 
+  }
+
+  .login-container {
+    width:75%;
+  }
+
+  .login-buton {
+    font-size: 1.6rem;
+  }
+
+  .login-input { 
+    font-size: 1.0rem;
+  } 
+  .reglink{
+    font-size: 1.2rem;
+  } 
+}
+
+.flash_msg {
+    color: red;
+    text-align: center;
+    margin-top: 10px;
+    font-size: 0.9rem;
+}
+
+/* RADIO-BUTTON  Общий контейнер */
+.radio-group {
+  display: flex;
+  flex-direction: row; 
+  flex-wrap: wrap;     
+  justify-content: center; /* Центрирует элементы по горизонтали */
+  gap: 20px;           
+  font-family: sans-serif;
+  width: 100%;             /* Убедитесь, что контейнер занимает всю ширину */
+  padding-bottom: 14px;
+}
+
+.radio-item {
+  display: flex;
+  align-items: center;
+}
+
+/* Полностью скрываем дефолтный radio, сохраняя доступность для скринридеров */
+.radio-item input[type="radio"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+/* Стилизация текстовой метки и создание кастомного кружка */
+.radio-item label {
+  position: relative;
+  padding-left: 32px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #333333;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+}
+
+/* Внешнее кольцо радиокнопки */
+.radio-item label::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border: 1px solid #b4b4b4;
+  border-radius: 50%;
+  background-color: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Внутренняя активная точка (скрыта по умолчанию через масштаб scale(0)) */
+.radio-item label::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 50%;
+  transform: translateY(-50%) scale(0);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: rgb(79 70 229);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Эффект при наведении на элемент */
+.radio-item:hover label::before {
+  border-color: rgb(79 70 229);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* Состояние, когда радиокнопка выбрана */
+.radio-item input[type="radio"]:checked + label::before {
+  border-color: rgb(79 70 229);
+}
+
+/* Показываем внутреннюю точку при выборе (плавно увеличиваем до scale(1)) */
+.radio-item input[type="radio"]:checked + label::after {
+  transform: translateY(-50%) scale(1);
+}
+
+/* Фокус клавиатуры для доступности (когда переключаются табом) */
+.radio-item input[type="radio"]:focus-visible + label::before {
+  outline: 2px solid rgb(79 70 229);
+  outline-offset: 2px;
+}

@@ -1,0 +1,27 @@
+# Окружение и секреты 
+.env
+
+# Папки Python
+__pycache__/
+*.py[cod]
+.venv/
+env/
+venv/
+logs/
+uploads/
+
+#  qwen2.5-0.5b ....
+models/
+
+# Docker
+.dockerignore
+*.log
+package-lock.json
+package.json
+
+.vscode/
+.idea/
+
+# windtails
+node_modules/
+src/

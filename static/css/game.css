@@ -1,0 +1,235 @@
+.game-grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr; 
+  gap: 10px; 
+  width: 100%;
+  padding-right:10px;
+  padding-left:10px;
+  overflow-x: hidden;
+}
+
+.center-block {
+  grid-column: 2; 
+}
+
+.right-block {
+  grid-column: 3; 
+  overflow: hidden;
+}
+
+#history-list {  height: calc(100vh - 440px);   border: 1px solid rgb(240, 244, 250); border-radius: 7px; }
+
+#stats-grid ul li { font-size:0.8rem; }
+#stats-grid ul li b { font-size:1.0rem; }
+#users-rates ul li span  { font-size:0.9rem; }
+#users-rates ul li b  { font-size:0.9rem; }
+#toast_message {cursor: pointer; }
+
+.radar-container {
+    position: relative;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, #282b55 0%, #1a1c33 70%, #0f111a 100%);
+    border: 4px solid #444a91;
+    box-shadow: 0 0 25px rgba(37, 40, 73, 0.4);    
+    border-radius: 50%; 
+    margin: 10px auto;
+    overflow: hidden;
+}
+
+@media (max-width: 767px) {
+    .game-grid-container {
+        grid-template-columns: 1fr; 
+        gap: 10px;
+        padding-right: 10px;
+        padding-left: 10px;
+        height: auto !important; 
+        min-height: 85vh !important;
+        overflow-y: visible !important;
+    }
+
+    .center-block {
+        grid-column: auto;
+        max-width: 100%; /* Заменили 100vw на 100%, чтобы не было бокового скролла */
+        border-radius: 1rem; 
+    }
+
+    .right-block {
+        grid-column: auto; 
+        width: calc(100vw - 10px);
+    }
+
+    #radar-block { overflow: hidden; padding-left: 7px; max-height: 410px !important; }
+
+    .radar-container {  transform-origin: top left; transform: scale(0.75); }
+
+    #history-list { 
+        height: auto;              
+        min-height: 250px;        
+        max-height: 54vh;         
+        border: 1px solid #e2e8f0;  
+        border-radius: 0.75rem;
+        padding: 8px;
+    } 
+
+    /* Перестраиваем статистику вертикально на смартфонах */
+    #stats-grid {
+        flex-direction: column !important;
+        height: auto !important;
+        gap: 15px !important;
+    }
+
+    /* Сбрасываем фиксированную ширину внутреннего блока рейтинга */
+    #users-rates {
+        width: 100% !important;
+        height: 150px !important;
+    }
+
+    /* Разрешаем перенос текста в статистике */
+    #stats-grid ul {
+        margin-left: 5px !important;
+        white-space: normal !important; /* Отменяет text-wrap:nowrap */
+    }
+
+}
+
+b {color: #a200ff; }
+
+.radar-line-1 {
+    width: 400px;
+    height: 400px;
+}
+.radar-line-2 {
+    width: 300px;
+    height: 300px;
+}
+.radar-line-3 {
+    width: 200px;
+    height: 200px;
+}
+.radar-line-4 {
+    width: 100px;
+    height: 100px;
+}
+
+.radar-lines {
+    position: absolute;
+    top: 50%;
+    left: 50%;    
+    transform: translate(-50%, -50%);
+    background: none;
+    border: 1px solid #a6becf;
+    border-radius: 50%; 
+    overflow: hidden;
+}
+
+/* Центр мишени */
+.radar-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 7px;
+    height: 7px;
+    background-color: #47ffff; 
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+}
+
+/* Стили для всплывающих слов-меток */
+.radar-word {
+    position: absolute;
+    font-family: sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 6px;
+    color:#ffffff;
+    background: rgba(0, 0, 0, 0.6); 
+    border:#ffffff70 1px ridge;
+    transform: translate(-50%, -50%); 
+    white-space: nowrap;
+    transition: all 0.5s ease-out; 
+}
+
+.timer-urgent {
+    color: #e53e3e !important; 
+    animation: smooth-blink 1s infinite alternate; 
+}
+
+.success-shot {
+    color: #ffffff !important; 
+    animation: smooth-blink 1s infinite alternate; 
+}
+
+/* Описание самой анимации */
+@keyframes smooth-blink {
+    0% {
+        opacity: 1; /* Полностью видимый текст */
+        transform: scale(1); /* Обычный размер */
+    }
+    100% {
+        opacity: 0.2; /* Почти прозрачный */
+        transform: scale(1.05); /* Легкое пульсирующее увеличение для драматизма */
+    }
+}
+
+/* Находим наш блок по классу или тегу */
+.overflow-y-auto {
+    /* 1. Делаем скроллбар тонким (для Firefox) */
+    scrollbar-width: thin; 
+    
+    /* 2. Красим: 1-й цвет — сам бегунок, 2-й цвет — фон дорожки (прозрачный!) */
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent; 
+}
+
+/* Старый, но всё еще нужный синтаксис для Chrome/Safari/Edge */
+.overflow-y-auto::-webkit-scrollbar {
+    width: 6px; /* Задаем фиксированную изящную ширину */
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+    background: transparent; 
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.25); /* Бегунок будет полупрозрачным белым */
+    border-radius: 10px; /* Скругляем сам бегунок */
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.4); /* При наведении он станет чуть ярче */
+}
+
+.toast {
+  position: fixed;
+  top: 30%;
+  left: calc(100vw / 2);
+  background-color: #ffffff;
+  color: rgb(70, 33, 33);
+  padding: 16px 20px;
+  border: #60f3fd solid 1px;
+  border-radius: 8px;
+  box-shadow: 0 5px 8px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  z-index: 1000;
+  
+  /* Анимация */
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 0.5s, transform 0.5s;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast .close-btn {
+  font-weight: bold;
+  color: red;
+  cursor: pointer;
+}
+

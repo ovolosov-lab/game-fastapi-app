@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link href="/static/css/dist.css" rel="stylesheet">
+    <link href="/static/css/game.css" rel="stylesheet"/>
+    <link href="/static/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+</head>
+<body class="bg-amber-50 text-slate-800 font-sans min-h-screen flex flex-col justify-between">
+
+    <!-- Шапка игры -->
+    <header class="bg-indigo-600 text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-wide">{{program_banner}}</h1>
+            <span class="text-sm bg-indigo-700 px-3 py-1 rounded-full">Ver. 1.0</span>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <main class="game-grid-container h-[calc(100vh-114px)] overflow-y-auto">
+        
+        <!-- WELCOME BLOCK (Экран старта и статистики) -->
+        <div id="welcome-card" class="center-block bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <p class="text-sm text-slate-500 mb-4">{{program_description}}</p>            
+            <h2 class="text-lg font-semibold mb-4 text-indigo-600">{{game_stats}}</h2>
+            <div id="stats-grid" class="h-[202px] border rounded-2xl p-2.5 flex flex-row justify-between mb-6 gap-6"></div>
+
+            <button id="start-btn" class="w-full bg-indigo-600 text-white font-medium py-3 rounded-xl hover:bg-indigo-700 transition shadow-sm">
+                {{start}}
+            </button>
+        </div>
+
+        <!-- RUNNING GAME BLOCK (По умолчанию скрыт через class "hidden") -->
+        <div id="game-card" class="center-block bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hidden">
+            <div id="game_started_header" class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 id="hidden-word" class="text-xl font-bold text-indigo-600"></h2>
+                    <p class="text-xs text-slate-400 mt-1">{{try_guess}}</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <!-- Блок таймера -->
+                    <div id="timer-block" class="flex items-center space-x-1 text-indigo-600 bg-amber-50 px-3 py-1.5 rounded-lg border border-indigo-200 font-mono text-sm font-semibold">
+                        <span>⏳</span>
+                        <span id="game-timer">02:00:00</span>
+                    </div>
+        
+                    <button id="help-btn" class="text-sm border border-blue-200 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-indigo-50 transition  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent">
+                        {{get_hint}}
+                    </button>
+                </div>
+            </div>
+            <div id="game_finished_header" class="flex justify-between items-center mb-6 hidden">
+                <div>
+                    <h2 id="game-over" class="text-xl font-bold text-slate-800 text-emerald-800">{{achieved_success}}</h2>
+                    <p class="text-xs text-slate-400 mt-1">{{new_announced}}</p>
+                </div>
+                <div class="flex flex-col justify-between space-y-[10px]">
+                    <button id="start-again-btn" class="w-full py-3 bg-indigo-600 text-white font-medium py-3 rounded-xl hover:bg-indigo-700 transition shadow-sm">
+                        {{play_again}}
+                    </button>
+                    <button id="quit-btn" class="px-3 bg-indigo-600 text-white font-medium py-3 rounded-xl hover:bg-indigo-700 transition shadow-sm">
+                        {{view_stats}}
+                    </button>
+                </div>
+            </div>
+
+            <!-- Информационное сообщение (победа / игра завершилась по таймауту ) -->
+            <div id="game-status-msg" class="mb-4 p-3 rounded-xl text-center font-medium hidden"></div>
+
+            <!-- Форма отправки догадки -->
+            <form id="guess-form" class="flex space-x-2 mb-6">
+                <input type="text" id="word-input" required placeholder="{{enter_the_word}}" 
+                       class="flex-grow border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <button type="submit" id="submit-guess-btn" class="bg-emerald-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-emerald-700 transition">
+                    {{check}}
+                </button>
+            </form>
+
+            <!-- Таблица результатов (История попыток) -->
+            <div>
+                <div class="flex justify-between text-sm font-semibold text-slate-500 tracking-wider mb-3">
+                    <div>{{Your_attempts}} (<span id="attempts" style="color:magenta;"></span>)</div>
+                    <div><span>{{show_radar}}</span> <input id="show_radar" name="show_radar" type="checkbox"></div>
+                </div>
+                <div class="space-y-2 overflow-y-auto pr-1" id="history-list">
+                    <p class="text-sm text-slate-400 text-center py-4 id='empty-history'">{{not_yet}}</p>
+                </div>
+            </div>
+
+        </div>
+        <div id="radar-block" class="right-block bg-white rounded-2xl shadow-sm border border-slate-200 transition-all duration-1000 opacity-0 hidden">
+            <!--  ЭКРАН РАДАРА  -->
+            <div class="radar-container" id="radar">
+                <div class="radar-line-1 radar-lines">
+                <div class="radar-line-2 radar-lines">
+                <div class="radar-line-3 radar-lines">
+                <div class="radar-line-4 radar-lines">
+                    <div class="absolute inset-0 animate-spin" style="animation-duration: 4s;">
+                        <div class="w-1/2 h-full bg-gradient-to-r from-emerald-500/40 to-transparent origin-right transform rotate-90"></div>
+                    </div>
+                    <div class="animate-pulse radar-center"> </div>
+                </div>
+                </div>
+                </div>
+                </div>
+            </div>        
+        </div>
+    </main>
+
+    <!-- Подвал страницы -->
+    <footer class="text-center text-xs text-slate-400 p-4 border-t border-slate-200 bg-white">
+     <b>{{username}}</b> | {{footer}}
+    </footer>
+
+    <!-- Модальное окно для демонстрации подсказок -->
+    <dialog id="hint-dialog" class="fixed inset-0 m-auto rounded-2xl p-6 shadow-2xl border border-slate-200 max-w-sm w-full backdrop:bg-slate-900/40">
+        <div class="flex flex-col items-center text-center">
+            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-xl mb-4">
+                💡
+            </div>           
+            <h3 class="text-lg font-bold text-slate-800 mb-2">{{hint_header}}</h3>            
+            <p id="hint-text" class="text-sm text-slate-600 mb-6 bg-slate-50 p-3 rounded-xl w-full border border-slate-100 italic">
+                {{loading_hint}}
+            </p>            
+            <button id="close-hint-btn" class="w-full bg-slate-100 text-slate-700 font-medium py-2.5 rounded-xl hover:bg-slate-200 transition">
+                {{close_text}}
+            </button>
+        </div>
+    </dialog>
+
+    <div id="toast" class="toast hidden">
+        <span id="toast_message" class="message" onclick="open_hint_dlg()"></span>
+        <span class="close-btn" onclick="hideToast()">×</span>
+    </div>    
+
+    <script>
+        let currentGameId = null;
+        let isGameActive = false;
+        let timerInterval = null;
+        let joined_the_game = false; 
+        let language = '{{language}}';
+        if ('{{joined_the_game}}' == 'True') { joined_the_game = true; }
+        let attempts = 0; 
+        let prevGuess = null;
+        let firstGuess = null;
+        let toastTimeout;
+
+        const welcomeCard = document.getElementById('welcome-card');
+        const gameCard = document.getElementById('game-card');
+        const startBtn = document.getElementById('start-btn');
+        const startAgainBtn = document.getElementById('start-again-btn');
+        const helpBtn = document.getElementById('help-btn');
+        const guessForm = document.getElementById('guess-form');
+        const wordInput = document.getElementById('word-input');
+        const historyList = document.getElementById('history-list');
+        const emptyHistory = document.getElementById('empty-history');
+        const gameStatusMsg = document.getElementById('game-status-msg');
+        const gameFinishedHeader = document.getElementById('game_finished_header');
+        const gameStartedHeader = document.getElementById('game_started_header');
+        const hiddenWord = document.getElementById('hidden-word');
+        const hintDialog = document.getElementById('hint-dialog');
+        const hintText = document.getElementById('hint-text');
+        const closeHintBtn = document.getElementById('close-hint-btn');
+        const radarBlock = document.getElementById('radar-block');
+        const quitBtn = document.getElementById('quit-btn');
+        const stats = document.getElementById('stats-grid');
+
+
+        // ЗАКОНЧИТЬ ИГРУ - вернуться в Статистику игр 
+        async function handleQuitClick() {
+            currentGameId = 0;
+            
+            await fill_statistic();
+            
+            if (document.getElementById('show_radar').checked) {
+                hideRadar();
+            }                    
+            gameCard.classList.add('hidden');
+            guessForm.classList.add('hidden');
+            gameStartedHeader.classList.add('hidden');
+            gameFinishedHeader.classList.add('hidden');
+            welcomeCard.classList.remove('hidden');
+        }    
+        
+
+        // НАЧАЛО ИГРЫ 
+        async function handleStartClick() {
+            try {
+                attempts = 0;
+                console.log("Начать игру! POST-Запрос к серверу /game/join")
+                const response = await fetch('/game/join', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if ((data.status == "active") && (data.seconds_left > 10)) {
+                    console.log(`status = ${data.status} game_id=${data.game_id}  message=${data.message}`);
+                    currentGameId = data.game_id;
+                    isGameActive = true;
+
+                    joined_the_game = true;
+                    // Делаем видимым блок текущей игры - убираем блок статистики
+                    welcomeCard.classList.add('hidden');
+                    gameCard.classList.remove('hidden');
+                    guessForm.classList.remove('hidden');
+                    gameStartedHeader.classList.remove('hidden');
+                    gameFinishedHeader.classList.add('hidden');
+
+                    show_radar(false);
+
+                    hiddenWord.innerText = `{{need2guess1}} ${data.word_len}{{need2guess2}} (${data.language})`;
+                    startTimer(data.seconds_left);
+
+                    attempts = data.total_attempts;
+
+                    document.getElementById('attempts').innerText = attempts;
+                
+                    // Очищаем историю предыдущей игры, если она была
+                    historyList.innerHTML = '';
+                    historyList.style = "";
+                    firstGuess = null;
+                    secondGuess = null;
+
+                    gameStatusMsg.classList.add('hidden');
+                    wordInput.disabled = false;
+                    document.getElementById('submit-guess-btn').disabled = false;
+                    document.getElementById('timer-block').classList.replace('text-red-600', 'text-indigo-600');
+                    document.getElementById('timer-block').classList.replace('bg-red-50', 'bg-amber-50');
+                    document.getElementById('timer-block').classList.remove('timer-urgent');
+                    helpBtn.className = "text-sm border border-blue-200 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-indigo-50 transition  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent";
+                    helpBtn.disabled = true;
+
+                    wordInput.focus();
+                } else { 
+                    console.log(`status = ${data.status}  message=${data.message}  seconds_left=${data.seconds_left}`);
+                    if (data.message) {
+                        console.log(data.message);
+                    }  else {
+                        console.log("{{new_round}}");
+                    }
+                    handleQuitClick();
+                    currentGameId = 0;
+                }        
+
+            } catch (error) {
+                console.error('New game start error:', error);
+                alert('{{connection_problems}}');
+            }
+        }
+
+        startBtn.addEventListener("click", handleStartClick);
+        startAgainBtn.addEventListener("click", handleStartClick);
+        quitBtn.addEventListener("click", handleQuitClick);
+
+
+        // ОТПРАВКА СЛОВА ИГРОКОМ
+        guessForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+            if (!isGameActive) return;
+
+            const userWord = wordInput.value.trim();
+            if (!userWord) return;
+            if (currentGameId == 0) return;
+
+            try {
+                console.log("Отгадываем слово:  POST-Запрос к серверу /game/guess")
+                const response = await fetch('/game/guess', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        gameid: currentGameId,
+                        word: userWord
+                    }),
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (data.status == "CLOSED") {
+                    console.log(`Текущая игра ${currentGameId} оказалась уже завершенной!`)
+                    endGame(false, "{{another_winner}}")
+                } else {    
+                    if (data.word) {
+                        if (document.getElementById('empty-history')) {
+                            document.getElementById('empty-history').remove();
+                        }
+                        attempts = data.attempts;
+                        document.getElementById('attempts').innerText = attempts;                    
+                        // Добавляем строку попытки в список попыток
+                        addAttemptToUI(data.word, data.similarity, data.is_correct);
+                        
+                        // Добавляем слово на экран радара    
+                        if (document.getElementById('show_radar').checked) {
+                            addWordToRadar(data.word, data.similarity);
+                        }        
+
+                        // Очищаем поле ввода для следующего слова
+                        wordInput.value = '';
+                        wordInput.focus();
+
+                        // Если слово угадано на 100%
+                        if (data.is_correct) {
+                            endGame(true, `{{Congratulations}} "${data.word}"! 🎯 🎉`);
+                        }
+
+                        if (attempts > 4) {
+                            let hints_level = attempts // 5
+                            helpBtn.disabled = false;
+                            helpBtn.className = "text-sm font-semibold border border-blue-300 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition";
+                            if ((attempts % 5) == 0) {
+                                showToast("{{placeholder1}}")
+                            }
+                        }
+                    }    
+                }
+
+            } catch (error) {
+                console.error('{{word_check_error}}', error);
+            }
+        });
+
+
+        // обработка события КНОПКА "ЗАПРОСИТЬ ПОСКАЗКУ"  - заполнение диалога 
+        helpBtn.addEventListener('click', open_hint_dlg ); 
+        
+
+        async function open_hint_dlg() 
+        {
+            if (attempts > 4) {
+                try {
+                    const response = await fetch(`/game/help/${currentGameId}`, {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                    const data = await response.json();
+                    if (data) {
+                        console.log(data);
+                        hintDialog.showModal();
+                        if (data.result == "YES") { 
+                            let tmp_html = "{{No_hints_found}} 😔";    
+
+                            if (data.first_letter != "") {
+                                tmp_html = `<p style='padding-bottom:10px;'>{{starts_with_hint}} <b style="color:magenta">${data.first_letter}</b><p>`;
+                            }
+
+                            if (data.last_letter != "") {
+                                tmp_html += `<hr/><p style='padding:10px;'>{{ends_with_hint}} <b style="color:magenta">${data.last_letter}</b><p>`;
+                            } 
+
+                            if (data.analogues.length > 0) {
+                                let wordsList = `<hr/><p>{{analogues}}</p><p style="font-size:1.2rem; color:magenta;">`;
+                                data.analogues.forEach(word => {
+                                    wordsList += `  <span class="h-2 w-2 rounded-full bg-indigo-500"></span>${word} `;
+                                });    
+                                tmp_html += wordsList + "</p>";                            
+                            }     
+
+                            if (data.second_letter != "") {
+                                tmp_html += `<hr/><p style='padding:10px;'>{{second_letter_hint}} <b style="color:magenta">${data.second_letter}</b><p>`;
+                            } 
+
+                            if (data.anagram != "") {
+                                tmp_html += `<hr/><p style='padding:10px;'>{{anagram_hint}} <b style="color:magenta">${data.anagram}</b><p>`;
+                            } 
+
+                            console.log(data.ai);
+                            if (data.ai != "") {
+                                tmp_html += `<hr/><p style='padding:10px;'>{{ai_hint}} <b style="color:magenta">${data.ai}</b><p>`;
+                            } 
+                            hintText.innerHTML = tmp_html;
+                        } else {
+                            hintText.innerText = "{{hints_not_available}}";                            
+                        }
+                    }
+                } catch (error) {
+                    console.error('Ошибка:', error);
+                }
+            } else {
+                alert(`{{try_harder}} ${5 - attempts} `);
+            }
+        }
+
+
+        // ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ: Добавление строки в таблицу результатов
+        function addAttemptToUI(word, score, isCorrect) {
+            const row = document.createElement('div');
+            row.className = "flex justify-between items-center p-3 rounded-xl border transition shadow-sm ";
+
+            let smile = "🎯";
+
+            if (isCorrect) {
+                row.className += "bg-emerald-100 border-emerald-300 text-emerald-900 font-bold"; // В точку!
+            } else if (score > 65) {
+                row.className += "bg-orange-100 border-orange-300 text-orange-900"; // Очень тепло
+                smile = "🔥";
+            } else if (score > 45) {
+                row.className += "bg-yellow-50 border-yellow-200 text-yellow-900"; // Тепло
+                smile = "😊";
+            } else if (score > 39) {
+                row.className += "bg-slate-100 border-slate-200 text-slate-600"; // Холодно
+                smile = "🥶";
+            } else {
+                row.className += "bg-blue-100 border-blue-200 text-blue-600"; // Совсем Холодно
+                smile = "❄️";
+            }
+            row.innerHTML = `<span class="font-medium pl-1">${word}</span> <span class="text-sm font-mono bg-white/60 px-2 py-0.5 rounded-md border border-black/5">${score}{{similarity}}  ${smile}</span>`;
+
+            historyList.insertBefore(row, historyList.firstChild);
+
+            if (!firstGuess) {
+                firstGuess = row;
+            } else {
+                if ((firstGuess)&&(secondGuess)) {
+                    historyList.insertBefore(secondGuess, firstGuess);
+                    secondGuess = null;
+                }
+                if (score < 40) {
+                    secondGuess = row;
+                }
+            }
+
+            historyList.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+
+        // ПЛАВНОЕ ПОЯВЛЕНИЕ РАДАРА
+        function show_radar(olready_checked) {
+            if ((olready_checked) || (document.getElementById('show_radar').checked)) {
+                // Очищаем радар
+                document.getElementById('radar').innerHTML = `<div class="absolute inset-0 animate-spin" style="animation-duration: 4s;"><div class="w-1/2 h-full bg-gradient-to-r from-emerald-600/40 to-transparent origin-right transform rotate-90"></div></div>
+                    <div class="radar-line-1 radar-lines"><div class="radar-line-2 radar-lines"><div class="radar-line-3 radar-lines"><div class="radar-line-4 radar-lines">
+                    <div class="animate-pulse radar-center"> </div>
+                    </div></div></div>`;
+                // Делаем видимым    
+                radarBlock.classList.remove('hidden');        
+                // плавное появление
+                setTimeout(() => {
+                    radarBlock.classList.add('opacity-100', 'scale-100');
+                    radarBlock.classList.remove('opacity-0', 'scale-95');                
+                }, 10);            
+            }
+        }
+
+        // ПЛАВНОЕ ЗАКРЫТИЕ РАДАРА
+        function hideRadar() {
+            radarBlock.classList.add('opacity-0', 'scale-95');
+            radarBlock.classList.remove('opacity-100', 'scale-100');
+            
+            radarBlock.addEventListener('transitionend', function handler() {
+                radarBlock.classList.add('hidden');
+                
+                radarBlock.removeEventListener('transitionend', handler);
+            });
+        }
+
+
+        // Заполнение статистики
+        async function fill_statistic() {
+            try {
+                const response = await fetch('/game/stats', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+               
+                if (data) {
+                    let tmp_stats = `<ul class="space-y-003 font-medium text-slate-700" style="margin-left:20px;text-wrap:nowrap;">`;
+            
+                    if (data.status != "active") {
+                        if (data.game_id == 0) {
+                            tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>Через несколько секунд стартует новая игра!</b></li>`;
+                        } else {
+                            tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>Последней была игра №<b>${data.game_id}</b></li>`;
+                        }
+                    } else {       // alert(data.remaining_time); 
+                        tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>{{stats_game1}}<b>${data.game_id}</b>{{stats_game2}}</li>
+                                    <li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>{{participants}}<b>${data.participants}</b></li>
+                                    <li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>{{att1}}<b>${data.total_attempts}</b>{{att2}}</li>
+                                    <li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>{{timeleft1}}<b>${Math.round(data.remaining_time/60)}</b>{{timeleft2}}</li>`;
+                    }                  
+                    tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>{{previous}} <b>${data.last_secret_word}</b></li></ul>
+                    <div class="h-[180px] w-[200px] border border-indigo-950/40 rounded-2xl p-3 bg-indigo-600 overflow-y-auto" id="users-rates"><ul class="space-y-3 font-medium text-white text-sm">`;
+                    
+                    if (data.players) {
+                        console.log(data.players);
+                        data.players.forEach(pl => {
+                            let stella = "";
+                            if (pl.last_winner == 1) {
+                                stella = "⭐";
+                            }
+                            tmp_stats += `<li class="flex items-center justify-between"><div class="flex items-center gap-2 truncate">
+                                          <span class="h-2 w-2 flex-shrink-0 rounded-full bg-emerald-500 ml-2"></span>
+                                          <span class="truncate">${pl.username} ${stella}</span></div><b class="pl-2.5 pr-3" style="color:#40dacc">${pl.rate}</b></li>`;
+                        });
+                    }    
+                    tmp_stats += `</ul></div>`;
+                    stats.innerHTML = tmp_stats;
+                } 
+            } catch (error) {
+                console.error('Game statistic information fetch error:', error);
+            }                
+
+        }
+
+        // Завершение игры !!!
+        function endGame(isVictory, message) {
+            clearInterval(timerInterval);
+            joined_the_game = false;
+            isGameActive = false;
+
+            wordInput.disabled = true;
+            document.getElementById('submit-guess-btn').disabled = true;
+            gameStatusMsg.innerHTML = message;
+            gameStatusMsg.classList.remove('hidden');
+            gameFinishedHeader.classList.remove('hidden');
+            gameStartedHeader.classList.add('hidden');
+            guessForm.classList.add('hidden');
+
+            if (document.getElementById('show_radar').checked) {
+                setTimeout(() => { hideRadar(); }, 5000);
+            }    
+
+            if (isVictory) {
+                playWinSound();
+                historyList.style = "max-height: 50vh;";
+                gameStatusMsg.className = "mb-4 p-4 rounded-xl text-center font-bold bg-emerald-500 text-white shadow-md";
+                document.getElementById('game-over').innerHTML = `<b style='color:magenta;font-family:cursive;font-size:1.6rem;'>{{success2}}</b>`;
+
+                if (typeof confetti.reset === 'function') {
+                    confetti.reset();
+                }            
+                confetti({
+                    particleCount: 80,
+                    angle: 60,         
+                    spread: 65,
+                    origin: { x: 0.2, y: 0.6 } 
+                });
+                confetti({
+                    particleCount: 80,
+                    angle: 120,         
+                    spread: 65,
+                    origin: { x: 0.8, y: 0.6 } 
+                });
+            } else {
+                gameStatusMsg.className = "mb-4 p-4 rounded-xl text-center font-bold bg-gray-500 text-white shadow-md";
+                document.getElementById('game-over').innerHTML = "{{comfort}}";
+            }
+            document.getElementById('show_radar').checked = false;
+            attemprs = 0;
+            currentGameId = 0;
+        }
+
+        
+        // запуск таймера оставшегося времени при старте новой игры
+        function startTimer(durationInSeconds) { 
+            let color_changed = false;
+            if (timerInterval) clearInterval(timerInterval);
+            
+            let timeRemaining = durationInSeconds;
+            const timerDisplay = document.getElementById('game-timer');
+            
+            function updateTimerDisplay() {
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('timer-block').classList.remove('timer-urgent');
+                    timerDisplay.innerText = "😔:😔";
+                    setTimeout(endGame, 3000, false, "{{sorry_finished}}");
+                    return;
+                }
+                
+                let hours = Math.floor(timeRemaining / 3600);
+                let minutes = Math.floor((timeRemaining % 3600) / 60);
+                let seconds = timeRemaining % 60;
+
+                if ((timeRemaining < 120) && (!color_changed)) {
+                    document.getElementById('timer-block').classList.replace('text-indigo-600', 'text-red-600');
+                    document.getElementById('timer-block').classList.replace('bg-amber-50', 'bg-red-50');
+                    color_changed = true;
+                } else if (timeRemaining < 20) {
+                    document.getElementById('timer-block').classList.add('timer-urgent');
+                }
+                
+                // Форматируем, чтобы всегда было 2 цифры (02:05:09)
+                timerDisplay.innerText = 
+                    `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                
+                timeRemaining--;
+            }
+            
+            updateTimerDisplay();
+            timerInterval = setInterval(updateTimerDisplay, 1000);
+        }
+
+        // Закрытие диалога подсказок при клике на кнопку
+        closeHintBtn.addEventListener('click', () => {
+            hintDialog.close(); // Нативный метод закрытия
+        });
+
+        // закрытие диалога подсказок при клике на полупрозрачный фон вокруг него
+        hintDialog.addEventListener('click', (e) => {
+            const dialogDimensions = hintDialog.getBoundingClientRect();
+            if (
+                e.clientX < dialogDimensions.left ||
+                e.clientX > dialogDimensions.right ||
+                e.clientY < dialogDimensions.top ||
+                e.clientY > dialogDimensions.bottom
+            ) {
+                hintDialog.close();
+            }
+        });
+
+
+        // Print the word on the RADAR display
+        function addWordToRadar(word, similarityPercent) {
+            const radar = document.getElementById('radar');
+            
+            // Создаем элемент для слова
+            const wordElement = document.createElement('div');
+            wordElement.className = 'radar-word';
+            wordElement.textContent = `${word} (${similarityPercent.toFixed(1)}%)`;
+            
+            // Вычисляем радиус (расстояние от центра в пикселях)
+            const maxRadius = 240; 
+            const radius = maxRadius * (1 - (similarityPercent / 100));
+            
+            // Выбираем случайный угол направления от 0 до 2*PI (в радианах)
+            const angle = Math.random() * 2 * Math.PI;
+            
+            // Переводим полярные координаты (радиус и угол) в декартовы (X и Y) относительно центра 
+            const centerX = 250;
+            const centerY = 250;            
+            const posX = centerX + radius * Math.cos(angle);
+            const posY = centerY + radius * Math.sin(angle);
+            
+            // Будем менять цвет в зависимости от процента схожести слов
+            let color;
+            if (similarityPercent < 39) {
+                color = 'rgb(191, 219, 254)'; // Blue
+            } else if (similarityPercent < 45) {
+                color = 'rgb(226, 232, 240)'; // Gray
+            } else if (similarityPercent < 65) {
+                color = 'rgb(254,240,138)'; // Yellow
+            } else if (similarityPercent < 100) {
+                color = 'rgb(253,186,116)';  // Orange
+                // wordElement.classList.add('success-shot');
+            } else {
+                color = 'rgb(110,231,183)'; // Emerald
+            }
+            wordElement.style.color = color;
+            // Устанавливаем координаты на радаре
+            wordElement.style.left = `${posX}px`;
+            wordElement.style.top = `${posY}px`;            
+            // Добавляем слово на экран
+            radar.appendChild(wordElement);
+        }
+
+        document.getElementById('show_radar').addEventListener('change', () => {
+            if (event.target.checked) {
+                show_radar(true);
+            } else {
+                hideRadar();
+            }
+
+        });
+
+     
+        function playWinSound() {
+            const audio = new Audio('/static/victory.mp3');
+            console.log("start to play the Victory sound!")
+            audio.play().catch(error => {
+                console.log("Браузер заблокировал звук, ждем первого клика пользователя.");
+            });
+        } 
+    
+        function showToast(txt) {
+            const toast = document.getElementById("toast");
+            document.getElementById("toast_message").innerHTML = "💡 " + txt;
+            toast.classList.remove("hidden");
+            toast.classList.add("show");
+            // Убираем старый таймер, если он был
+            clearTimeout(toastTimeout);
+            // Скрываем автоматически через 6 секунды
+            toastTimeout = setTimeout(() => { hideToast(); }, 6000);
+        }
+
+        function hideToast() {
+            const toast = document.getElementById("toast");
+            if (toast.classList.contains("show")) {
+                toast.classList.remove("show");
+                setTimeout(() => toast.classList.add("hidden"), 500); 
+            }
+        }   
+
+
+        // Вход сразу в блок текущей игры, если пользовавтель еще не завершил эту игру
+        if (joined_the_game) {
+            handleStartClick();
+        } else {  // если не вошли сразу в игру - заполняем и показываем статистику последней игры
+            fill_statistic();
+        }
+    </script>
+    <script src="/static/confetti.js"></script>
+</body>    
