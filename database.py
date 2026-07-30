@@ -237,6 +237,7 @@ async def the_game_state_update(userid: int, game_id: int, player_id: int, word:
 async def create_new_game(session_factory: async_sessionmaker, app_state) -> bool:
     language: str = settings.language
     game_lock = app_state.process_lock
+    new_game_id:int|None = None
     async with game_lock:       
         async with session_factory() as session: 
             try:
@@ -250,27 +251,34 @@ async def create_new_game(session_factory: async_sessionmaker, app_state) -> boo
                 word_res = await session.execute(select_word_query, {"lang": language})
                 word_data = word_res.fetchone()
                 if not word_data:
-                    logger.error("Английский словарь слов не найден в базе данных. Заполните таблицу words для 'en'")
+                    logger.error(f"Словарь слов на языке '{language}' не найден в базе данных. Заполните таблицу words для '{language}'")
+                    if language != 'en':
+                        settings.language = 'en'
                     return False
             
                 logger.success(f"Выбрано новое секретное слово для угадывания: {word_data.word}")
 
                 # Закрываем старую игру
-                finish_query = text("UPDATE games SET finished=LOCALTIMESTAMP WHERE finished IS NULL  RETURNING id")
+                finish_query = text("UPDATE games SET finished=LOCALTIMESTAMP WHERE finished IS NULL AND EXTRACT(EPOCH FROM (LOCALTIMESTAMP - g.started))::INTEGER > 10  RETURNING id")
                 result = await session.execute(finish_query)
                 old_game_id = result.scalar()
                 if old_game_id:
                     finish_query = text("DELETE FROM players WHERE gameid < :gameid - 1")
                     await session.execute(finish_query, {"gameid": old_game_id})
-                logger.info("Текущая (старая) игра завершена!")
-                # Фиксируем НОВУЮ игру в таблице games
-                insert_game_query = text("INSERT INTO games (secret_word_id, language) VALUES (:word_id, :lang)  RETURNING id")
-                result = await session.execute(insert_game_query, {"word_id": word_data.id, "lang": language})
-                new_game_id = result.scalar()
+                    logger.info("Текущая (старая) игра завершена!")
+                    # Фиксируем НОВУЮ игру в таблице games
+                    insert_game_query = text("INSERT INTO games (secret_word_id, language) VALUES (:word_id, :lang)  RETURNING id")
+                    result = await session.execute(insert_game_query, {"word_id": word_data.id, "lang": language})
+                    new_game_id = result.scalar()
                 await session.commit() 
-                await fill_hints_cache(new_game_id, word_data.word, language, session, app_state)
-                logger.success("ํНовая игра создана!")        
-                return True
+
+                if new_game_id:
+                    logger.success("ํНовая игра создана!")        
+                    await fill_hints_cache(new_game_id, word_data.word, language, session, app_state)
+                    return True
+                else:
+                    logger.warning("Нельзя завершить игру, которая только-что началась!")
+                    return False
             except Exception as e:
                 await session.rollback() 
                 logger.exception("Ошибка при создании новой игры!")
@@ -338,10 +346,12 @@ async def get_hint(gameid: int, userid: int, language:str, session: SessionDep, 
 
     level: int = row.cnt 
     hintResponse: HintResponse = get_hints_from_cache(request, level) 
-    
-    sql = text("UPDATE players SET hints=:hints WHERE userid = :userid AND gameid = :gameid AND hints < :hints;")
-    await session.execute(sql, {"userid": userid, "gameid": gameid, "hints": level})
-    await session.commit() 
+
+    if level > 4:
+        sql = text("UPDATE players SET hints=:hints WHERE userid = :userid AND gameid = :gameid AND hints < :hints;")
+        level = level // 5
+        await session.execute(sql, {"userid": userid, "gameid": gameid, "hints": level})
+        await session.commit() 
     logger.info(f"ํПользователем {userid} в игре {gameid} запрошено {level} подсказок")  
 
     return hintResponse     
