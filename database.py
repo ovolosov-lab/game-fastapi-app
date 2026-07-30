@@ -259,7 +259,7 @@ async def create_new_game(session_factory: async_sessionmaker, app_state) -> boo
                 logger.success(f"Выбрано новое секретное слово для угадывания: {word_data.word}")
 
                 # Закрываем старую игру
-                finish_query = text("UPDATE games SET finished=LOCALTIMESTAMP WHERE finished IS NULL AND EXTRACT(EPOCH FROM (LOCALTIMESTAMP - g.started))::INTEGER > 10  RETURNING id")
+                finish_query = text("UPDATE games SET finished=LOCALTIMESTAMP WHERE finished IS NULL AND EXTRACT(EPOCH FROM (LOCALTIMESTAMP - started))::INTEGER > 10  RETURNING id")
                 result = await session.execute(finish_query)
                 old_game_id = result.scalar()
                 if old_game_id:
