@@ -12,8 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Создаем папку под модель и скачиваем Qwen 2.5 напрямую с Hugging Face
-RUN mkdir -p /app/models && \
-    wget -O /app/models/qwen2.5-0.5b-instruct-q4_k_m.gguf \
+RUN wget -O /app/data/qwen2.5-0.5b-instruct-q4_k_m.gguf \
     https://huggingface.co
 
 COPY requirements.txt .
