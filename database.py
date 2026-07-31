@@ -2,11 +2,11 @@ import asyncio
 from datetime import datetime
 
 from fastapi import Depends, HTTPException, Request
-from llama_cpp import Llama
 from sqlalchemy import URL, insert, select, text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from typing import Annotated, Any, Dict, cast
-from models import Base, UserOrm, WordOrm
+from llama_cpp import Llama
+from models import Base, WordOrm
 from schemas import HintCache, HintResponse
 from config import settings, logger
 
@@ -418,8 +418,6 @@ async def fill_hints_cache(gameid: int, word: str, language: str, session: Sessi
     hint_cache.size = len(word)
     hint_cache.result = "YES"
   
-    llm: Llama = app_state.llm
-
     sql = text("""
         SELECT w.word 
         FROM words w   
@@ -432,6 +430,13 @@ async def fill_hints_cache(gameid: int, word: str, language: str, session: Sessi
     words_list = list(res.scalars().all())
     if words_list:
         hint_cache.analogues = words_list 
+
+    if app_state.ai_enabled:    
+        hint_cache.ai = await create_ai_description(word, language, app_state)   
+
+
+async def create_ai_description(word: str, language: str, app_state) -> str:
+    llm: Llama = app_state.llm
 
     lang_rules = "Write STRICTLY IN ENGLISH. Start your answer directly with the description."
     example_1_user = "Describe the object: 'Bicycle'"
@@ -482,9 +487,12 @@ async def fill_hints_cache(gameid: int, word: str, language: str, session: Sessi
         )
         output = cast(Dict[str, Any], raw_output)
         theHint = output["choices"][0]["text"].strip()
-        hint_cache.ai = theHint.lower().replace(word, "*"*len(word))        
+        return theHint.lower().replace(word, "*"*len(word))        
     except Exception as e:
         logger.exception("Ошибка генерации подсказки моделью!")
+        return ""    
+
+             
 
 
 

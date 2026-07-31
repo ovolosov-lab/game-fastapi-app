@@ -47,9 +47,14 @@ async def lifespan(app: FastAPI):
         model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     )
 
-    app.state.llm = Llama(model_path=str(MODEL_PATH), n_ctx=1024, n_threads=4)
-    logger.success("Загрузка ML моделей завершена!")
-
+    try:
+        app.state.llm = Llama(model_path=str(MODEL_PATH), n_ctx=1024, n_threads=4)
+        logger.success("Загрузка ML моделей завершена!")
+        app.state.ai_enabled = True 
+    except Exception as e:
+        app.state.ai_enabled = False
+        logger.exception("Ошибка загрузки модели")
+ 
     await create_new_game(new_session, app.state)
 
     yield

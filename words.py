@@ -6,7 +6,7 @@ from fastapi.concurrency import run_in_threadpool
 from fastembed import TextEmbedding
 from sqlalchemy import text
 from database import SessionDep, insert_words2db
-from config import PROMPT_TEMPLATES, logger, settings
+from config import PROMPT_TEMPLATES, logger
 from langdetect import detect, LangDetectException
 #import nltk
 #from nltk.corpus import wordnet

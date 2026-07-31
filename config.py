@@ -8,7 +8,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
 
-MODEL_PATH = BASE_DIR / "models" / "qwen2.5-0.5b-instruct-q4_k_m.gguf"
+MODEL_PATH = BASE_DIR / "data" / "qwen2.5-0.5b-instruct-q4_k_m.gguf"
 # MODEL_PATH = os.path.join(BASE_DIR, "models/qwen2.5-0.5b-instruct-q4_k_m.gguf") 
 
 ERROR_MESSAGES_RU = {
