@@ -189,8 +189,8 @@
         async function handleStartClick() {
             try {
                 attempts = 0;
-                console.log("Начать игру! POST-Запрос к серверу /game/join")
-                const response = await fetch('/game/join', {
+                console.log("Начать игру! POST-Запрос к серверу /game/join/")
+                const response = await fetch('/game/join/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include'
@@ -268,8 +268,8 @@
             if (currentGameId == 0) return;
 
             try {
-                console.log("Отгадываем слово:  POST-Запрос к серверу /game/guess")
-                const response = await fetch('/game/guess', {
+                console.log("Отгадываем слово:  POST-Запрос к серверу /game/guess/")
+                const response = await fetch('/game/guess/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -462,7 +462,7 @@
         // Заполнение статистики
         async function fill_statistic() {
             try {
-                const response = await fetch('/game/stats', {
+                const response = await fetch('/game/stats/', {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include'
