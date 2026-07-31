@@ -55,7 +55,7 @@ async def lifespan(app: FastAPI):
         app.state.ai_enabled = False
         logger.exception("Ошибка загрузки модели")
  
-    await create_new_game(new_session, app.state)
+    await create_new_game(new_session, app.state, True)
 
     yield
 

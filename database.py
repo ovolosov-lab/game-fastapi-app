@@ -225,7 +225,7 @@ async def the_game_state_update(userid: int, game_id: int, player_id: int, word:
         logger.success("Данные очередного хода успешно записаны в БД")
 
         if similarity_percent > 99.0:
-            await create_new_game(new_session, app_state)
+            await create_new_game(new_session, app_state, False)
 
         return True
     except Exception as e:
@@ -234,7 +234,7 @@ async def the_game_state_update(userid: int, game_id: int, player_id: int, word:
         raise HTTPException(status_code=500, detail="Ошибка записи в БД данных очередного хода")
 
 
-async def create_new_game(session_factory: async_sessionmaker, app_state) -> bool:
+async def create_new_game(session_factory: async_sessionmaker, app_state, force: bool) -> bool:
     language: str = settings.language
     game_lock = app_state.process_lock
     new_game_id:int|None = None
@@ -259,10 +259,13 @@ async def create_new_game(session_factory: async_sessionmaker, app_state) -> boo
                 logger.success(f"Выбрано новое секретное слово для угадывания: {word_data.word}")
 
                 # Закрываем старую игру
-                finish_query = text("UPDATE games SET finished=LOCALTIMESTAMP WHERE finished IS NULL AND EXTRACT(EPOCH FROM (LOCALTIMESTAMP - started))::INTEGER > 10  RETURNING id")
+                if force:
+                    finish_query = text("UPDATE games SET finished=LOCALTIMESTAMP WHERE finished IS NULL  RETURNING id")
+                else:    
+                    finish_query = text("UPDATE games SET finished=LOCALTIMESTAMP WHERE finished IS NULL AND EXTRACT(EPOCH FROM (LOCALTIMESTAMP - started))::INTEGER > 10  RETURNING id")
                 result = await session.execute(finish_query)
                 old_game_id = result.scalar()
-                if old_game_id:
+                if old_game_id or force:
                     finish_query = text("DELETE FROM players WHERE gameid < :gameid - 1")
                     await session.execute(finish_query, {"gameid": old_game_id})
                     logger.info("Текущая (старая) игра завершена!")
@@ -332,7 +335,7 @@ async def check_the_game_duration(session_factory: async_sessionmaker, app_state
 
     if found:
         logger.info("Найдена 'устаревшая' игра !!!")
-        await create_new_game(session_factory, app_state)  
+        await create_new_game(session_factory, app_state, False)  
 
 
 async def get_hint(gameid: int, userid: int, language:str, session: SessionDep, request: Request) -> HintResponse:  
