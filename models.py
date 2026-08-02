@@ -81,6 +81,10 @@ class WinnerOrm(Base):
     gameid: Mapped[int] = mapped_column(ForeignKey('games.id', ondelete="CASCADE"), index=True)
     scores: Mapped[int] = mapped_column(nullable=False, default=0) 
 
+    __table_args__ = (
+        UniqueConstraint('userid', 'gameid', name='uq_winner_userid_gameid'),
+    )
+
     
 class DescriptOrm(Base):
     __tablename__ = "descriptions"

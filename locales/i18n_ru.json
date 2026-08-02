@@ -65,5 +65,7 @@
     "enter_the_word": "Введите ваше слово...", 
     "another_winner": "Другой игрок угадал слово", 
     "anagram_hint": "Все буквы:", 
-    "similarity": "% сходства"
+    "similarity": "% сходства",
+    "game_finished": "Завершена игра", 
+    "game_finished2": "" 
 }   

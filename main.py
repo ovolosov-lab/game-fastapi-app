@@ -147,8 +147,8 @@ async def add_user(new_user: Annotated[NewUser, Form()], session: SessionDep) ->
 @app.get("/game/home/", tags=["Game", "home page"], summary="Welcome to the Game home page")
 async def home_page(session: SessionDep, request: Request, current_user: UserInfo = Depends(get_current_user)):
     i18n_data: dict = load_internationalization_data(current_user.lang)
-    joined_the_game: bool = await check_the_player_involved(current_user.userid, 0, current_user.lang, False, session)
-    data = {"username": current_user.username, "joined_the_game": str(joined_the_game), "language": current_user.lang}
+    player_data: dict = await check_the_player_involved(current_user.userid, 0, current_user.lang, False, session)
+    data = {"username": current_user.username, "joined_the_game": "True" if player_data["result"] == True else "False", "language": current_user.lang}
     return templates.TemplateResponse(request, "game.html", {"request": request, **data, **i18n_data})
 
 
@@ -182,23 +182,23 @@ async def make_guess(
     is_correct:bool = False
     attempts:int = 0
 
-    if await check_the_player_involved(current_user.userid, payload.gameid, current_user.lang, False, session):
+    player_data:dict = await check_the_player_involved(current_user.userid, payload.gameid, current_user.lang, False, session)
+    if player_data["result"]:
         # Кодируем guessed word игрока
         guessing_lang: str = detect_language(payload.word)
         user_embedd_vec = generate_embedding(payload.word, guessing_lang, request.app.state.embedder)  
 
         # Получаем ИД игрока, кол-во попыток. Считаем расстояние в БД и переводим в проценты схожести
         sql_query = text("""
-            SELECT g.id AS game_id, p.id AS player_id, p.attempts, w.embedding, w.word as secret_word, w.language
-            FROM players p JOIN games g ON g.id = p.gameid JOIN words w ON w.id = g.secret_word_id
-            WHERE p.userid = :userid AND g.id=:gameid AND g.finished IS NULL
+            SELECT g.id AS game_id, w.embedding, w.word as secret_word, w.language
+            FROM games g JOIN words w ON w.id = g.secret_word_id
+            WHERE g.id=:gameid AND g.finished IS NULL
             LIMIT 1
         """)  
-        result = await session.execute(sql_query, {"userid": current_user.userid, "gameid": payload.gameid}) 
+        result = await session.execute(sql_query, {"gameid": payload.gameid}) 
         game_data = result.fetchone()
         if not game_data:
             return GuessResponse(status = "CLOSED", word = "", similarity = 0, is_correct = False, attempts = 0)
-
 
         if (game_data.secret_word == payload.word):
             similarity_percent = 100.0
@@ -232,9 +232,9 @@ async def make_guess(
                 similarity_percent = 100.0
 
         # Обновляем состояние игры
-        await the_game_state_update(current_user.userid, game_data.game_id, game_data.player_id, payload.word, game_data.secret_word, similarity_percent, request.app.state, session)
+        await the_game_state_update(current_user.userid, game_data.game_id, player_data["player_id"], payload.word, game_data.secret_word, similarity_percent, request.app.state, session)
 
-        attempts = game_data.attempts + 1
+        attempts = player_data["attempts"] + 1
 
         return GuessResponse(status = "OK", word = payload.word, similarity = round(similarity_percent, 2), is_correct = is_correct, attempts = attempts)
     else:
@@ -260,7 +260,12 @@ async def get_game_status(session: SessionDep, current_user: UserInfo = Depends(
         participants = game_stats.total_participants
         total_attempts = game_stats.total_attempts
         secret_word = game_stats.last_word
-        remaining_time = settings.game_duration - game_stats.seconds_passed
+
+        if game_stats.win:
+            status = "finished"
+            remaining_time = 0
+        else:     
+            remaining_time = settings.game_duration - game_stats.seconds_passed
             
         logger.info(f"{settings.game_duration} remaining game time (sec) = {remaining_time}")
 
@@ -282,7 +287,8 @@ async def get_game_status(session: SessionDep, current_user: UserInfo = Depends(
 
 @app.post("/game/join/", tags=["Game", "game session", "join"], summary="Join the game")
 async def join_the_game(session: SessionDep, current_user: UserInfo = Depends(get_current_user)):
-    if await check_the_player_involved(current_user.userid, 0, current_user.lang, True, session):
+    player_data:dict = await check_the_player_involved(current_user.userid, 0, current_user.lang, True, session)
+    if player_data["result"]:
         game_stats = await get_the_game_statistic(current_user.userid, session)
         
         if not game_stats:

@@ -3,6 +3,7 @@ from datetime import datetime
 
 from fastapi import Depends, HTTPException, Request
 from sqlalchemy import URL, insert, select, text
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from typing import Annotated, Any, Dict, cast
 from llama_cpp import Llama
@@ -139,11 +140,12 @@ async def find_the_running_game(session: AsyncSession) -> dict:
         return {"id": 0, "game_time": 0}  
     
 
-async def check_the_player_involved(userid: int, gameid: int, language: str, force: bool, session: SessionDep) -> bool:
+async def check_the_player_involved(userid: int, gameid: int, language: str, force: bool, session: SessionDep) -> dict:
     """Ensure a player record exists for the given userid in the current running game.
     Returns True if the user already has a player record for the running game or was added successfully.
     Returns False if there is no running game or if an error occurred while adding (error is logged).
     """
+    player_id:int = 0
     game_checked:bool = False
     game_id = gameid
     try:
@@ -151,22 +153,26 @@ async def check_the_player_involved(userid: int, gameid: int, language: str, for
             game_dict = await find_the_running_game(session)
             if game_dict["id"] == 0:
                 logger.error(f"No running game found when trying to involve user {userid} in a game")
-                return False
+                return {"result": False}
             else:
                 if (settings.game_duration - game_dict["game_time"]) < 11:
                     logger.error(f"Current game is about to exceed its time. Cannot join {userid} to this game")
-                    return False
+                    return {"result": False}
                 else:
                     game_id = game_dict["id"]
                     game_checked = True
 
         if game_id > 0:
             # Check if the player already exists for this game
-            sql = text("SELECT p.id FROM players p INNER JOIN games g ON g.id=p.gameid WHERE userid = :userid AND gameid = :gameid AND g.finished IS NULL LIMIT 1")
+            sql = text("""
+                SELECT p.id, p.attempts 
+                FROM players p INNER JOIN games g ON g.id=p.gameid 
+                WHERE userid = :userid AND gameid = :gameid AND g.finished IS NULL AND p.finished IS NULL LIMIT 1
+            """)
             res = await session.execute(sql, {"userid": userid, "gameid": game_id})
             row = res.first()
             if row:
-                return True
+                return {"result": True, "player_id": row.id, "attempts": row.attempts}
             else:
                 logger.info(f"Данный пользователь {userid} еще не привязан к игре {game_id}")
 
@@ -180,14 +186,24 @@ async def check_the_player_involved(userid: int, gameid: int, language: str, for
             if cnt == 0:
                 settings.language = language
             # Try to insert new player record
-            sql = text("INSERT INTO players (userid, gameid, attempts, hints) VALUES (:userid, :gameid, 0, 0)")
-            await session.execute(sql, {"userid": userid, "gameid": game_id})
-            await session.commit()
-            logger.success(f"User {userid} was added as a player to game {game_id}")
-            return True
+            try:
+                sql = text("INSERT INTO players (userid, gameid, attempts, hints) VALUES (:userid, :gameid, 0, 0) RETURNING id")
+                res = await session.execute(sql, {"userid": userid, "gameid": game_id})
+                await session.commit()    
+                row = res.first()
+                if row:
+                    player_id = row.id
+                    logger.success(f"User {userid} was added as a player to game {game_id}")
+                    return {"result": True, "player_id": player_id, "attempts": 0}
+                else:
+                    return {"result": False}  
+            except IntegrityError as e:
+                await session.rollback()
+                logger.info(f"Попытка userid={userid} подключиться в игру {game_id} второй раз !")
+                return {"result": False}    
         else:
             logger.info(f"Условия вызова функции запрещают создать игру !")
-            return False
+            return {"result": False}
     except Exception as e:
         await session.rollback()
         logger.error(f"Failed to add user {userid} to the running game: {e}")
@@ -199,13 +215,12 @@ async def the_game_state_update(userid: int, game_id: int, player_id: int, word:
     try:
         # Если игрок угадал слово - он победитель и игра завершена!
         if similarity_percent > 99.0:
+            word_length: int = (len(secret_word) - 3) * 10
             sql_query = text("""
                 INSERT INTO winners(userid, gameid, scores) 
-                SELECT :userid, g.id, 
-                (100 + (LENGTH(w.word)-3)*10 - COALESCE((SELECT p.hints FROM players p WHERE p.userid = :userid2 AND p.gameid = g.id LIMIT 1),0)*10) as scores
-                FROM games g INNER JOIN words w ON g.secret_word_id=w.id WHERE g.id = :gameid;
+                SELECT :userid, :gameid, (100 + (:word_length - COALESCE((SELECT p.hints FROM players p WHERE p.id = :playerid LIMIT 1),0)*10));
             """)
-            await session.execute(sql_query, {"userid": userid, "userid2": userid, "gameid": game_id})
+            await session.execute(sql_query, {"userid": userid, "playerid": player_id, "gameid": game_id, "word_length": word_length})
             enddate = datetime.now()
             logger.info(f"записываются в БД данные победителя {userid} - он победил в игре {game_id}, угадал слово {secret_word}")
 
@@ -218,15 +233,15 @@ async def the_game_state_update(userid: int, game_id: int, player_id: int, word:
             sql_query = text("UPDATE players SET attempts=attempts+1 WHERE id=:player_id")
             await session.execute(sql_query, {"player_id": player_id})
 
-        sql_query = text("INSERT INTO sessions(playerid, word, similarity_score) SELECT :playerid, :word, :similarity_score")
-        await session.execute(sql_query, {"playerid": player_id, "word": word, "similarity_score": similarity_percent})
+        if similarity_percent <= 99.0:
+            sql_query = text("INSERT INTO sessions(playerid, word, similarity_score) SELECT :playerid, :word, :similarity_score")
+            await session.execute(sql_query, {"playerid": player_id, "word": word, "similarity_score": similarity_percent})
         
         await session.commit()
         logger.success("Данные очередного хода успешно записаны в БД")
 
-        if similarity_percent > 99.0:
-            await create_new_game(new_session, app_state, False)
-
+        #if similarity_percent > 99.0:
+        #    await create_new_game(new_session, app_state, False)
         return True
     except Exception as e:
         await session.rollback() 
@@ -276,7 +291,7 @@ async def create_new_game(session_factory: async_sessionmaker, app_state, force:
                 await session.commit() 
 
                 if new_game_id:
-                    logger.success("ํНовая игра создана!")        
+                    logger.success(f"ํНовая игра {new_game_id} создана!")        
                     await fill_hints_cache(new_game_id, word_data.word, language, session, app_state)
                     return True
                 else:
@@ -297,7 +312,8 @@ async def get_the_game_statistic(userid, session: SessionDep):
                 COUNT(DISTINCT p.userid) AS total_participants,
                 COALESCE(SUM(p.attempts), 0) AS total_attempts,
                 COALESCE((SELECT ww.word FROM words ww INNER JOIN games gg ON ww.id=gg.secret_word_id WHERE gg.finished IS NOT NULL ORDER BY gg.id DESC LIMIT 1), '') as last_word, 
-                MIN(EXTRACT(EPOCH FROM (LOCALTIMESTAMP - g.started))::INTEGER) AS seconds_passed
+                MIN(EXTRACT(EPOCH FROM (LOCALTIMESTAMP - g.started))::INTEGER) AS seconds_passed,
+                EXISTS(SELECT 1 FROM winners w WHERE w.gameid=g.id) AS win
             FROM games g LEFT JOIN players p ON p.gameid = g.id
             WHERE g.id = (SELECT MAX(z.id) FROM games z)
             GROUP BY g.id
@@ -327,7 +343,10 @@ async def check_the_game_duration(session_factory: async_sessionmaker, app_state
     logger.info(f"Проверка игры на превышение {settings.game_duration}")
     found: bool = False   
     async with session_factory() as session:
-        query = text("SELECT id FROM games WHERE finished IS NULL AND (EXTRACT(EPOCH FROM (LOCALTIMESTAMP - started))::INTEGER) >= :seconds;")
+        query = text("""
+            SELECT g.id FROM games g 
+            WHERE g.finished IS NULL AND (((EXTRACT(EPOCH FROM (LOCALTIMESTAMP - g.started))::INTEGER) >= :seconds) OR EXISTS(SELECT 1 FROM winners w WHERE w.gameid=g.id));
+        """)
         result = await session.execute(query, {"seconds": (settings.game_duration - 10)})
         row = result.first()
         if row:

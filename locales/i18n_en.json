@@ -65,5 +65,7 @@
     "enter_the_word": "Please enter your word...",
     "another_winner": "Another player guessed the word",
     "anagram_hint": "All the letters:",
-    "similarity": "% of similarity"
+    "similarity": "% of similarity", 
+    "game_finished": "Game", 
+    "game_finished2": "Completed" 
 }

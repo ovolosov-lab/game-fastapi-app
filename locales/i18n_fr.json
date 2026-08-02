@@ -65,5 +65,7 @@
     "enter_the_word": "Saisissez votre mot...", 
     "another_winner": "Un autre joueur a deviné le mot",
     "anagram_hint": "All the letters:", 
-    "similarity": "% de similarité"
+    "similarity": "% de similarité",
+    "game_finished": "Partie n°", 
+    "game_finished2": "terminée" 
 }

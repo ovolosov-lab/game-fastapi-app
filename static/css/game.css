@@ -17,6 +17,8 @@
   overflow: hidden;
 }
 
+#start-btn { margin-bottom: 15px; }
+
 #history-list {  height: calc(100vh - 440px);   border: 1px solid rgb(240, 244, 250); border-radius: 7px; }
 
 #stats-grid ul li { font-size:0.8rem; }
@@ -50,7 +52,7 @@
 
     .center-block {
         grid-column: auto;
-        max-width: 100%; /* Заменили 100vw на 100%, чтобы не было бокового скролла */
+        max-width: 100%; 
         border-radius: 1rem; 
     }
 
@@ -59,9 +61,18 @@
         width: calc(100vw - 10px);
     }
 
-    #radar-block { overflow: hidden; padding-left: 7px; max-height: 410px !important; }
+    #game-card { padding-top: 15px !important; padding: 15px; }    
+    #game_started_header { flex-direction: column; gap: 15px; }
+    #guess-form { flex-direction: column; }
+    #word-input {
+        width: 100%;
+        margin-bottom: 10px;
+    }
 
-    .radar-container {  transform-origin: top left; transform: scale(0.75); }
+    #show-radar-div { font-size: 0.8rem; }
+    #radar-block { overflow: hidden; padding-left: 7px; max-height: 305px !important; }
+
+    .radar-container {  transform-origin: top left; transform: scale(0.56); }
 
     #history-list { 
         height: auto;              
@@ -233,3 +244,11 @@ b {color: #a200ff; }
   cursor: pointer;
 }
 
+@media (max-width: 767px) {
+    .radar-word {
+        font-size: 1.1rem;
+    }
+    span.attempts-span {
+        font-size: 0.7rem;
+    }
+}    

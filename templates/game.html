@@ -24,12 +24,11 @@
         <!-- WELCOME BLOCK (Экран старта и статистики) -->
         <div id="welcome-card" class="center-block bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
             <p class="text-sm text-slate-500 mb-4">{{program_description}}</p>            
-            <h2 class="text-lg font-semibold mb-4 text-indigo-600">{{game_stats}}</h2>
-            <div id="stats-grid" class="h-[202px] border rounded-2xl p-2.5 flex flex-row justify-between mb-6 gap-6"></div>
-
             <button id="start-btn" class="w-full bg-indigo-600 text-white font-medium py-3 rounded-xl hover:bg-indigo-700 transition shadow-sm">
                 {{start}}
             </button>
+            <h2 class="text-lg font-semibold mb-3 text-indigo-600">{{game_stats}}</h2>
+            <div id="stats-grid" class="h-[202px] border rounded-2xl p-2.5 flex flex-row justify-between mb-6 gap-6"></div>
         </div>
 
         <!-- RUNNING GAME BLOCK (По умолчанию скрыт через class "hidden") -->
@@ -82,7 +81,7 @@
             <div>
                 <div class="flex justify-between text-sm font-semibold text-slate-500 tracking-wider mb-3">
                     <div>{{Your_attempts}} (<span id="attempts" style="color:magenta;"></span>)</div>
-                    <div><span>{{show_radar}}</span> <input id="show_radar" name="show_radar" type="checkbox"></div>
+                    <div id="show-radar-div"><span>{{show_radar}}</span> <input id="show_radar" name="show_radar" type="checkbox"></div>
                 </div>
                 <div class="space-y-2 overflow-y-auto pr-1" id="history-list">
                     <p class="text-sm text-slate-400 text-center py-4 id='empty-history'">{{not_yet}}</p>
@@ -132,7 +131,12 @@
 
     <div id="toast" class="toast hidden">
         <span id="toast_message" class="message" onclick="open_hint_dlg()"></span>
-        <span class="close-btn" onclick="hideToast()">×</span>
+        <span class="close-btn" onclick="hideToast('toast')">×</span>
+    </div>    
+
+    <div id="toast2" class="toast hidden">
+        <span id="toast_message" class="message">{{new_round}}</span>
+        <span class="close-btn" onclick="hideToast('toast2')">×</span>
     </div>    
 
     <script>
@@ -243,7 +247,8 @@
                     }  else {
                         console.log("{{new_round}}");
                     }
-                    handleQuitClick();
+                    showToast("", "toast2");
+                    handleQuitClick(true);
                     currentGameId = 0;
                 }        
 
@@ -261,6 +266,7 @@
         // ОТПРАВКА СЛОВА ИГРОКОМ
         guessForm.addEventListener('submit', async (e) => {
             e.preventDefault(); 
+            document.getElementById('submit-guess-btn').disabled = true;
             if (!isGameActive) return;
 
             const userWord = wordInput.value.trim();
@@ -308,12 +314,14 @@
                             endGame(true, `{{Congratulations}} "${data.word}"! 🎯 🎉`);
                         }
 
+                        document.getElementById('submit-guess-btn').disabled = false;
+
                         if (attempts > 4) {
                             let hints_level = attempts // 5
                             helpBtn.disabled = false;
                             helpBtn.className = "text-sm font-semibold border border-blue-300 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition";
                             if ((attempts % 5) == 0) {
-                                showToast("{{placeholder1}}")
+                                showToast("💡 {{placeholder1}}", "toast")
                             }
                         }
                     }    
@@ -386,7 +394,7 @@
         }
 
 
-        // ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ: Добавление строки в таблицу результатов
+        // Добавление строки в таблицу результатов
         function addAttemptToUI(word, score, isCorrect) {
             const row = document.createElement('div');
             row.className = "flex justify-between items-center p-3 rounded-xl border transition shadow-sm ";
@@ -408,7 +416,7 @@
                 row.className += "bg-blue-100 border-blue-200 text-blue-600"; // Совсем Холодно
                 smile = "❄️";
             }
-            row.innerHTML = `<span class="font-medium pl-1">${word}</span> <span class="text-sm font-mono bg-white/60 px-2 py-0.5 rounded-md border border-black/5">${score}{{similarity}}  ${smile}</span>`;
+            row.innerHTML = `<span class="font-medium pl-1 pr-1">${word}</span> <span class="text-sm font-mono bg-white/60 px-2 py-0.5 rounded-md border border-black/5 attempts-span">${score}{{similarity}}  ${smile}</span>`;
 
             historyList.insertBefore(row, historyList.firstChild);
 
@@ -428,7 +436,7 @@
         }
 
 
-        // ПЛАВНОЕ ПОЯВЛЕНИЕ РАДАРА
+        // SWITCH ON THE RADAR device
         function show_radar(olready_checked) {
             if ((olready_checked) || (document.getElementById('show_radar').checked)) {
                 // Очищаем радар
@@ -475,9 +483,9 @@
             
                     if (data.status != "active") {
                         if (data.game_id == 0) {
-                            tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>Через несколько секунд стартует новая игра!</b></li>`;
+                            tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>{{new_round}}</b></li>`;
                         } else {
-                            tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>Последней была игра №<b>${data.game_id}</b></li>`;
+                            tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>{{game_finished}} <b>${data.game_id}</b> {{game_finished2}}</li>`;
                         }
                     } else {       // alert(data.remaining_time); 
                         tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>{{stats_game1}}<b>${data.game_id}</b>{{stats_game2}}</li>
@@ -679,19 +687,21 @@
             });
         } 
     
-        function showToast(txt) {
-            const toast = document.getElementById("toast");
-            document.getElementById("toast_message").innerHTML = "💡 " + txt;
+        function showToast(txt, id) {
+            const toast = document.getElementById(id);
+            if (id == "toast") {
+                document.getElementById("toast_message").innerHTML = txt;
+            }
             toast.classList.remove("hidden");
             toast.classList.add("show");
             // Убираем старый таймер, если он был
             clearTimeout(toastTimeout);
             // Скрываем автоматически через 6 секунды
-            toastTimeout = setTimeout(() => { hideToast(); }, 6000);
+            toastTimeout = setTimeout(() => { hideToast(id); }, 6000);
         }
 
-        function hideToast() {
-            const toast = document.getElementById("toast");
+        function hideToast(id) {
+            const toast = document.getElementById(id);
             if (toast.classList.contains("show")) {
                 toast.classList.remove("show");
                 setTimeout(() => toast.classList.add("hidden"), 500); 

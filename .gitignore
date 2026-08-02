@@ -13,6 +13,7 @@ uploads/
 #  qwen2.5-0.5b ....
 data/qwen2.5-0.5b-instruct-q4_k_m.gguf
 models/
+*.gguf
 
 # Docker
 .dockerignore
