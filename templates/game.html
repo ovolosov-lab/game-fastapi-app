@@ -493,23 +493,27 @@
                                     <li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>{{att1}}<b>${data.total_attempts}</b>{{att2}}</li>
                                     <li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>{{timeleft1}}<b>${Math.round(data.remaining_time/60)}</b>{{timeleft2}}</li>`;
                     }                  
-                    tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>{{previous}} <b>${data.last_secret_word}</b></li></ul>
-                    <div class="h-[180px] w-[200px] border border-indigo-950/40 rounded-2xl p-3 bg-indigo-600 overflow-y-auto" id="users-rates"><ul class="space-y-3 font-medium text-white text-sm">`;
+                    tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>{{previous}} <b>${data.last_secret_word}</b></li>`;
+                    let playersScores = `<div class="h-[180px] w-[200px] border border-indigo-950/40 rounded-2xl p-3 bg-indigo-600 overflow-y-auto" id="users-rates"><ul class="space-y-3 font-medium text-white text-sm">`;
                     
                     if (data.players) {
                         console.log(data.players);
                         data.players.forEach(pl => {
                             let stella = "";
-                            if (pl.last_winner == 1) {
+                            if (pl.last_winner > 0) {
                                 stella = "⭐";
                             }
-                            tmp_stats += `<li class="flex items-center justify-between"><div class="flex items-center gap-2 truncate">
+                            if (pl.username == '{{username}}') {
+                                tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>{{player_earned1}} <b>${pl.last_winner}</b> {{player_earned2}}</li>`;
+                            }
+                            playersScores += `<li class="flex items-center justify-between"><div class="flex items-center gap-2 truncate">
                                           <span class="h-2 w-2 flex-shrink-0 rounded-full bg-emerald-500 ml-2"></span>
                                           <span class="truncate">${pl.username} ${stella}</span></div><b class="pl-2.5 pr-3" style="color:#40dacc">${pl.rate}</b></li>`;
                         });
                     }    
-                    tmp_stats += `</ul></div>`;
-                    stats.innerHTML = tmp_stats;
+                    playersScores += `</ul></div>`;
+                    tmp_stats += `</ul>`;
+                    stats.innerHTML = tmp_stats + playersScores;
                 } 
             } catch (error) {
                 console.error('Game statistic information fetch error:', error);
@@ -545,16 +549,22 @@
                     confetti.reset();
                 }            
                 confetti({
-                    particleCount: 80,
+                    particleCount: 90,
                     angle: 60,         
                     spread: 65,
                     origin: { x: 0.2, y: 0.6 } 
                 });
                 confetti({
-                    particleCount: 80,
+                    particleCount: 90,
                     angle: 120,         
                     spread: 65,
                     origin: { x: 0.8, y: 0.6 } 
+                });
+                confetti({
+                    particleCount: 90,
+                    angle: 90,         
+                    spread: 65,
+                    origin: { x: 0.4, y: 0.1 } 
                 });
             } else {
                 gameStatusMsg.className = "mb-4 p-4 rounded-xl text-center font-bold bg-gray-500 text-white shadow-md";
@@ -662,10 +672,8 @@
                 color = 'rgb(110,231,183)'; // Emerald
             }
             wordElement.style.color = color;
-            // Устанавливаем координаты на радаре
             wordElement.style.left = `${posX}px`;
             wordElement.style.top = `${posY}px`;            
-            // Добавляем слово на экран
             radar.appendChild(wordElement);
         }
 
@@ -709,6 +717,9 @@
         }   
 
 
+        if (window.innerWidth < 768) {
+            document.querySelector('#show_radar').disabled = true;
+        }
         // Вход сразу в блок текущей игры, если пользовавтель еще не завершил эту игру
         if (joined_the_game) {
             handleStartClick();

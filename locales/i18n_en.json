@@ -67,5 +67,7 @@
     "anagram_hint": "All the letters:",
     "similarity": "% of similarity", 
     "game_finished": "Game", 
-    "game_finished2": "Completed" 
+    "game_finished2": "Completed", 
+    "player_earned1": "You scored", 
+    "player_earned2": "points in your last game"     
 }

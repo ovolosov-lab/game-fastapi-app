@@ -67,5 +67,7 @@
     "anagram_hint": "Все буквы:", 
     "similarity": "% сходства",
     "game_finished": "Завершена игра", 
-    "game_finished2": "" 
+    "game_finished2": "", 
+    "player_earned1": "Вы набрали", 
+    "player_earned2": "баллов в последней игре"
 }   

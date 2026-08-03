@@ -2,11 +2,12 @@ import asyncio
 from datetime import datetime
 
 from fastapi import Depends, HTTPException, Request
+from openai import AsyncOpenAI
 from sqlalchemy import URL, insert, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from typing import Annotated, Any, Dict, cast
-from llama_cpp import Llama
+# from llama_cpp import Llama
 from models import Base, WordOrm
 from schemas import HintCache, HintResponse
 from config import settings, logger
@@ -382,11 +383,10 @@ async def get_hint(gameid: int, userid: int, language:str, session: SessionDep, 
 async def get_players_stats (session: SessionDep):
     sql = text("""
         SELECT u.username, COALESCE(SUM(w.scores),0) as rate, 
-        CASE WHEN MAX(w.gameid) = COALESCE((SELECT MAX(z.gameid) FROM winners z),0) THEN 1 ELSE 0 END AS last_winner 
+        SUM(CASE WHEN w.id = (SELECT MAX(z.id) FROM winners z) THEN w.scores ELSE 0 END) AS last_winner 
         FROM users u LEFT OUTER JOIN winners w ON u.userid=w.userid 
         GROUP BY u.username
-        ORDER BY COALESCE(SUM(w.scores),0) DESC;    
-    """)
+        ORDER BY COALESCE(SUM(w.scores),0) DESC;      """)
     res = await session.execute(sql)
     return res.mappings().all()
 
@@ -440,14 +440,14 @@ async def fill_hints_cache(gameid: int, word: str, language: str, session: Sessi
     hint_cache.size = len(word)
     hint_cache.result = "YES"
   
-    sql = text("""
+    sql = text("""SELECT DISTINCT T.word FROM (
         SELECT w.word 
         FROM words w   
         WHERE w.language=:lang AND w.word != (SELECT z.word FROM words z INNER JOIN games g ON g.secret_word_id=z.id WHERE g.id=:gameid1 LIMIT 1)
-        AND (w.embedding <=> (SELECT z.embedding FROM words z INNER JOIN games g ON g.secret_word_id=z.id WHERE g.id=:gameid2 LIMIT 1)) < 0.55 AND w.word != 'word' 
+        AND (w.embedding <=> (SELECT z.embedding FROM words z INNER JOIN games g ON g.secret_word_id=z.id WHERE g.id=:gameid2 LIMIT 1)) < 0.85 AND w.word != 'word' 
         ORDER BY (w.embedding <=> (SELECT z.embedding FROM words z INNER JOIN games g ON g.secret_word_id=z.id WHERE g.id=:gameid3 LIMIT 1)) 
-        LIMIT 3;        
-    """)
+        LIMIT 3     
+    ) T;""")
     res = await session.execute(sql, {"lang": language, "gameid1": gameid, "gameid2": gameid, "gameid3": gameid})
     words_list = list(res.scalars().all())
     if words_list:
@@ -455,10 +455,48 @@ async def fill_hints_cache(gameid: int, word: str, language: str, session: Sessi
 
     if app_state.ai_enabled:    
         hint_cache.ai = await create_ai_description(word, language, app_state)   
+    else:
+        logger.warning("Модель ИИ НЕ инициализирована!")    
 
 
 async def create_ai_description(word: str, language: str, app_state) -> str:
-    llm: Llama = app_state.llm
+    llm: AsyncOpenAI = app_state.llm
+
+    imperativ:str = "Ты - ведущий в игре 'Угадай слово'. Твоя задача: Дать краткое (1-2 предложения) описание слова для игроков, которое поможет им угадать это слово, НИ В КОЕМ СЛУЧАЕ не называя это загаданное слово или однокоренные с ним слова."
+    prompt:str = f"Загаданное слово: {word}. Дай описание слова."
+    if language == "en":
+        imperativ = "You are the host of the game «Guess the Word». Your task: Give a short (1-2 sentences) description of the word to the players, which will help them guess it. Under NO CIRCUMSTANCES do you mention the hidden word or words with the same root as it."
+        prompt = f"The word is «{word}» Describe the word."
+    else:
+        if language == "fr":
+            imperativ = "Vous êtes l'animateur du jeu « Devinez le mot ». Votre mission : donner aux joueurs une brève description (1 à 2 phrases) du mot à deviner. Vous ne devez en aucun cas mentionner le mot caché ni aucun mot ayant la même racine."
+            prompt = f"Le mot est « {word} ». Décrivez ce mot."
+
+
+    response = await llm.chat.completions.create(
+        model="GLM-5.2", 
+        temperature=0.7,
+        max_tokens=500,
+        extra_body={"thinking": {"type": "disabled"}}, 
+        messages=[
+            {
+                "role": "system",
+                "content": (imperativ)
+            },
+            {"role": "user", "content": prompt}
+        ]
+    )
+    # logger.info("обращение к АПИ модели ИИ")
+    content = response.choices[0].message.content
+    # logger.info(response.choices)
+    if content is None:
+        return "😔"
+    else: 
+        return content.strip()
+
+"""
+async def create_ai_description(word: str, language: str, app_state) -> str:
+    # llm: Llama = app_state.llm
 
     lang_rules = "Write STRICTLY IN ENGLISH. Start your answer directly with the description."
     example_1_user = "Describe the object: 'Bicycle'"
@@ -513,7 +551,7 @@ async def create_ai_description(word: str, language: str, app_state) -> str:
     except Exception as e:
         logger.exception("Ошибка генерации подсказки моделью!")
         return ""    
-
+"""
              
 
 

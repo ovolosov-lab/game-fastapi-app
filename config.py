@@ -128,6 +128,8 @@ class Settings(BaseSettings):
     max_word_len: int = 15
     game_duration: int = 3600 # продолжительность игры - 1 час
     check_interval: int = 60 # интервал проверки на "время игры истекло"
+    ai_api_path: str = ""
+    ai_api_key: str = ""
     
 
     # Указываем, откуда брать данные

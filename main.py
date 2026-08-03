@@ -2,9 +2,9 @@ import asyncio
 import json
 from urllib.parse import quote, unquote
 import os
-from typing import Annotated, Any, Dict, cast
+from typing import Annotated
 from fastembed import TextEmbedding
-from llama_cpp import Llama
+# from llama_cpp import Llama
 import numpy as np
 from sqlalchemy.sql import func
 from contextlib import asynccontextmanager
@@ -16,10 +16,11 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import text
 from fastapi import Cookie, FastAPI, Form, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from openai import AsyncOpenAI
 
 from config import BASE_DIR, ERROR_MESSAGES_EN, ERROR_MESSAGES_RU, MODEL_PATH, settings, logger
 from database import SessionDep, check_the_game_duration, check_the_player_involved, check_user, create_new_game, engine, create_all_tables, db_connection_check, get_hint, get_players_stats, get_the_game_statistic, user_exists, the_game_state_update, new_session
-from schemas import GuessRequest, GuessResponse, HintCache, NewUser, User, UserInfo, WordRequest, WordsDataInfo
+from schemas import GuessRequest, GuessResponse, HintCache, NewUser, User, UserInfo, WordsDataInfo
 from services import AsyncPeriodicTask, create_new_user, get_err_message, load_internationalization_data
 from tokens import create_access_token, get_current_user
 from words import SUCCESS_THRESHOLD_PERCENT, detect_language, fill_words_list, generate_embedding, unload_words_list
@@ -48,20 +49,27 @@ async def lifespan(app: FastAPI):
     )
 
     try:
-        app.state.llm = Llama(model_path=str(MODEL_PATH), n_ctx=1024, n_threads=4)
-        logger.success("Загрузка ML моделей завершена!")
+        # app.state.llm = Llama(model_path=str(MODEL_PATH), n_ctx=1024, n_threads=4)
+        app.state.llm = AsyncOpenAI(
+            base_url = settings.ai_api_path, 
+            api_key = settings.ai_api_key 
+        )    
+        logger.success(f"Инициализация клиента для ML моделей завершена!  {settings.ai_api_path}")
         app.state.ai_enabled = True 
     except Exception as e:
         app.state.ai_enabled = False
         logger.exception("Ошибка загрузки модели")
- 
+    
+
     await create_new_game(new_session, app.state, True)
 
     yield
 
     await periodic_task.stop()
     await engine.dispose()
-    del app.state.llm
+
+    if app.state.ai_enabled:
+        app.state.llm.close()
 
 app = FastAPI(lifespan=lifespan)
 
