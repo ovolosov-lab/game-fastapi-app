@@ -151,6 +151,7 @@
         let firstGuess = null;
         let toastTimeout;
 
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         const welcomeCard = document.getElementById('welcome-card');
         const gameCard = document.getElementById('game-card');
         const startBtn = document.getElementById('start-btn');
@@ -266,12 +267,16 @@
         // ОТПРАВКА СЛОВА ИГРОКОМ
         guessForm.addEventListener('submit', async (e) => {
             e.preventDefault(); 
-            document.getElementById('submit-guess-btn').disabled = true;
-            if (!isGameActive) return;
-
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }    
+            if ((!isGameActive) || (currentGameId == 0)) return;
             const userWord = wordInput.value.trim();
             if (!userWord) return;
-            if (currentGameId == 0) return;
+    
+            const submitBtn = document.getElementById('submit-guess-btn');
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.5'; 
 
             try {
                 console.log("Отгадываем слово:  POST-Запрос к серверу /game/guess/")
@@ -307,14 +312,17 @@
 
                         // Очищаем поле ввода для следующего слова
                         wordInput.value = '';
-                        wordInput.focus();
+                        if (!isMobile) {
+                            wordInput.focus();
+                        }
 
                         // Если слово угадано на 100%
                         if (data.is_correct) {
                             endGame(true, `{{Congratulations}} "${data.word}"! 🎯 🎉`);
                         }
 
-                        document.getElementById('submit-guess-btn').disabled = false;
+                        submitBtn.disabled = false;
+                        submitBtn.style.opacity = '1';
 
                         if (attempts > 4) {
                             let hints_level = attempts // 5
@@ -326,9 +334,10 @@
                         }
                     }    
                 }
-
             } catch (error) {
                 console.error('{{word_check_error}}', error);
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
             }
         });
 
