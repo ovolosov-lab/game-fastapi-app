@@ -11,10 +11,10 @@
 <body class="bg-amber-50 text-slate-800 font-sans min-h-screen flex flex-col justify-between">
 
     <!-- Шапка игры -->
-    <header class="bg-indigo-600 text-white p-4 shadow-md">
+    <header id="game-header" class="bg-blue-600 text-white p-4 shadow-md">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-xl font-bold tracking-wide">{{program_banner}}</h1>
-            <span class="text-sm bg-indigo-700 px-3 py-1 rounded-full">Ver. 1.0</span>
+            <span class="text-sm text-blue-600 bg-amber-50 px-3 py-1 rounded-full">{{username}}</span>
         </div>
     </header>
 
@@ -24,10 +24,10 @@
         <!-- WELCOME BLOCK (Экран старта и статистики) -->
         <div id="welcome-card" class="center-block bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
             <p class="text-sm text-slate-500 mb-4">{{program_description}}</p>            
-            <button id="start-btn" class="w-full bg-indigo-600 text-white font-medium py-3 rounded-xl hover:bg-indigo-700 transition shadow-sm">
+            <button id="start-btn" class="w-full bg-blue-600 text-white font-medium py-3 rounded-xl hover:bg-blue-700 transition shadow-sm">
                 {{start}}
             </button>
-            <h2 class="text-lg font-semibold mb-3 text-indigo-600">{{game_stats}}</h2>
+            <h2 class="text-lg font-semibold mb-3 text-blue-600">{{game_stats}}</h2>
             <div id="stats-grid" class="h-[202px] border rounded-2xl p-2.5 flex flex-row justify-between mb-6 gap-6"></div>
         </div>
 
@@ -35,17 +35,17 @@
         <div id="game-card" class="center-block bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hidden">
             <div id="game_started_header" class="flex justify-between items-center mb-6">
                 <div>
-                    <h2 id="hidden-word" class="text-xl font-bold text-indigo-600"></h2>
+                    <h2 id="hidden-word" class="text-xl font-bold text-blue-600"></h2>
                     <p class="text-xs text-slate-400 mt-1">{{try_guess}}</p>
                 </div>
                 <div class="flex items-center space-x-3">
                     <!-- Блок таймера -->
-                    <div id="timer-block" class="flex items-center space-x-1 text-indigo-600 bg-amber-50 px-3 py-1.5 rounded-lg border border-indigo-200 font-mono text-sm font-semibold">
+                    <div id="timer-block" class="flex items-center space-x-1 text-blue-600 bg-amber-50 px-3 py-1.5 rounded-lg border border-blue-200 font-mono text-sm font-semibold">
                         <span>⏳</span>
                         <span id="game-timer">02:00:00</span>
                     </div>
         
-                    <button id="help-btn" class="text-sm border border-blue-200 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-indigo-50 transition  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent">
+                    <button id="help-btn" class="text-sm border border-blue-200 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent">
                         {{get_hint}}
                     </button>
                 </div>
@@ -56,10 +56,10 @@
                     <p class="text-xs text-slate-400 mt-1">{{new_announced}}</p>
                 </div>
                 <div class="flex flex-col justify-between space-y-[10px]">
-                    <button id="start-again-btn" class="w-full py-3 bg-indigo-600 text-white font-medium py-3 rounded-xl hover:bg-indigo-700 transition shadow-sm">
+                    <button id="start-again-btn" class="w-full py-3 bg-blue-600 text-white font-medium py-3 rounded-xl hover:bg-blue-700 transition shadow-sm">
                         {{play_again}}
                     </button>
-                    <button id="quit-btn" class="px-3 bg-indigo-600 text-white font-medium py-3 rounded-xl hover:bg-indigo-700 transition shadow-sm">
+                    <button id="quit-btn" class="px-3 bg-blue-600 text-white font-medium py-3 rounded-xl hover:bg-blue-700 transition shadow-sm">
                         {{view_stats}}
                     </button>
                 </div>
@@ -71,8 +71,8 @@
             <!-- Форма отправки догадки -->
             <form id="guess-form" class="flex space-x-2 mb-6">
                 <input type="text" id="word-input" required placeholder="{{enter_the_word}}" 
-                       class="flex-grow border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                <button type="submit" id="submit-guess-btn" class="bg-emerald-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-emerald-700 transition">
+                       class="flex-grow border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                <button type="submit" id="submit-guess-btn" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition">
                     {{check}}
                 </button>
             </form>
@@ -80,7 +80,7 @@
             <!-- Таблица результатов (История попыток) -->
             <div>
                 <div class="flex justify-between text-sm font-semibold text-slate-500 tracking-wider mb-3">
-                    <div>{{Your_attempts}} (<span id="attempts" style="color:magenta;"></span>)</div>
+                    <div>{{Your_attempts}} (<span id="attempts" style="color:rgb(21,93,252);"></span>)</div>
                     <div id="show-radar-div"><span>{{show_radar}}</span> <input id="show_radar" name="show_radar" type="checkbox"></div>
                 </div>
                 <div class="space-y-2 overflow-y-auto pr-1" id="history-list">
@@ -110,7 +110,7 @@
 
     <!-- Подвал страницы -->
     <footer class="text-center text-xs text-slate-400 p-4 border-t border-slate-200 bg-white">
-     <b>{{username}}</b> | {{footer}}
+     Ver. 1.0 | {{footer}}
     </footer>
 
     <!-- Модальное окно для демонстрации подсказок -->
@@ -171,6 +171,7 @@
         const radarBlock = document.getElementById('radar-block');
         const quitBtn = document.getElementById('quit-btn');
         const stats = document.getElementById('stats-grid');
+        const gameHeader = document.getElementById('game-header');
 
 
         // ЗАКОНЧИТЬ ИГРУ - вернуться в Статистику игр 
@@ -215,9 +216,15 @@
                     guessForm.classList.remove('hidden');
                     gameStartedHeader.classList.remove('hidden');
                     gameFinishedHeader.classList.add('hidden');
+                    if (isMobile) {
+                        gameHeader.classList.add("hidden");
+                    }
 
                     show_radar(false);
-
+                    
+                    if (isMobile) {
+                        hiddenWord.style.fontSize = '1.0rem';    
+                    }    
                     hiddenWord.innerText = `{{need2guess1}} ${data.word_len}{{need2guess2}} (${data.language})`;
                     startTimer(data.seconds_left);
 
@@ -234,10 +241,10 @@
                     gameStatusMsg.classList.add('hidden');
                     wordInput.disabled = false;
                     document.getElementById('submit-guess-btn').disabled = false;
-                    document.getElementById('timer-block').classList.replace('text-red-600', 'text-indigo-600');
+                    document.getElementById('timer-block').classList.replace('text-red-600', 'text-blue-600');
                     document.getElementById('timer-block').classList.replace('bg-red-50', 'bg-amber-50');
                     document.getElementById('timer-block').classList.remove('timer-urgent');
-                    helpBtn.className = "text-sm border border-blue-200 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-indigo-50 transition  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent";
+                    helpBtn.className = "text-sm border border-blue-200 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent";
                     helpBtn.disabled = true;
 
                     wordInput.focus();
@@ -372,7 +379,7 @@
                             if (data.analogues.length > 0) {
                                 let wordsList = `<hr/><p>{{analogues}}</p><p style="font-size:1.2rem; color:magenta;">`;
                                 data.analogues.forEach(word => {
-                                    wordsList += `  <span class="h-2 w-2 rounded-full bg-indigo-500"></span>${word} `;
+                                    wordsList += `  <span class="h-2 w-2 rounded-full bg-blue-500"></span>${word} `;
                                 });    
                                 tmp_html += wordsList + "</p>";                            
                             }     
@@ -414,16 +421,16 @@
                 row.className += "bg-emerald-100 border-emerald-300 text-emerald-900 font-bold"; // В точку!
             } else if (score > 65) {
                 row.className += "bg-orange-100 border-orange-300 text-orange-900"; // Очень тепло
-                smile = "🔥";
+                    smile = "🔥";
             } else if (score > 45) {
                 row.className += "bg-yellow-50 border-yellow-200 text-yellow-900"; // Тепло
-                smile = "😊";
+                    smile = "😊";
             } else if (score > 39) {
                 row.className += "bg-slate-100 border-slate-200 text-slate-600"; // Холодно
-                smile = "🥶";
+                    smile = "🥶";
             } else {
                 row.className += "bg-blue-100 border-blue-200 text-blue-600"; // Совсем Холодно
-                smile = "❄️";
+                    smile = "❄️";
             }
             row.innerHTML = `<span class="font-medium pl-1 pr-1">${word}</span> <span class="text-sm font-mono bg-white/60 px-2 py-0.5 rounded-md border border-black/5 attempts-span">${score}{{similarity}}  ${smile}</span>`;
 
@@ -492,18 +499,18 @@
             
                     if (data.status != "active") {
                         if (data.game_id == 0) {
-                            tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>{{new_round}}</b></li>`;
+                            tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-emerald-300"></span>{{new_round}}</b></li>`;
                         } else {
-                            tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>{{game_finished}} <b>${data.game_id}</b> {{game_finished2}}</li>`;
+                            tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-emerald-300"></span>{{game_finished}} <b>${data.game_id}</b> {{game_finished2}}</li>`;
                         }
                     } else {       // alert(data.remaining_time); 
-                        tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>{{stats_game1}}<b>${data.game_id}</b>{{stats_game2}}</li>
-                                    <li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>{{participants}}<b>${data.participants}</b></li>
-                                    <li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>{{att1}}<b>${data.total_attempts}</b>{{att2}}</li>
-                                    <li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>{{timeleft1}}<b>${Math.round(data.remaining_time/60)}</b>{{timeleft2}}</li>`;
+                        tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 mw8 rounded-full bg-emerald-300"></span>{{stats_game1}}<b>${data.game_id}</b>{{stats_game2}}</li>
+                                    <li class="flex items-center gap-3"><span class="h-2 mw8 rounded-full bg-emerald-300"></span>{{participants}}<b>${data.participants}</b></li>
+                                    <li class="flex items-center gap-3"><span class="h-2 mw8 rounded-full bg-emerald-300"></span>{{att1}}<b>${data.total_attempts}</b>{{att2}}</li>
+                                    <li class="flex items-center gap-3"><span class="h-2 mw8 rounded-full bg-emerald-300"></span>{{timeleft1}}<b>${Math.round(data.remaining_time/60)}</b>{{timeleft2}}</li>`;
                     }                  
-                    tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>{{previous}} <b>${data.last_secret_word}</b></li>`;
-                    let playersScores = `<div class="h-[180px] w-[200px] border border-indigo-950/40 rounded-2xl p-3 bg-indigo-600 overflow-y-auto" id="users-rates"><ul class="space-y-3 font-medium text-white text-sm">`;
+                    tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 mw8 rounded-full bg-emerald-300"></span>{{previous}} <b>${data.last_secret_word}</b></li>`;
+                    let playersScores = `<div class="h-[180px] w-[200px] border border-blue-950/40 rounded-2xl p-3 bg-blue-600 overflow-y-auto" id="users-rates"><ul class="space-y-3 font-medium text-white text-sm">`;
                     
                     if (data.players) {
                         console.log(data.players);
@@ -513,10 +520,10 @@
                                 stella = "⭐";
                             }
                             if (pl.username == '{{username}}') {
-                                tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>{{player_earned1}} <b>${pl.last_winner}</b> {{player_earned2}}</li>`;
+                                tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 mw8 rounded-full bg-emerald-300"></span>{{player_earned1}} <b>${pl.last_winner}</b> {{player_earned2}}</li>`;
                             }
                             playersScores += `<li class="flex items-center justify-between"><div class="flex items-center gap-2 truncate">
-                                          <span class="h-2 w-2 flex-shrink-0 rounded-full bg-emerald-500 ml-2"></span>
+                                          <span class="h-2 w-2 flex-shrink-0 rounded-full bg-emerald-300 ml-2"></span>
                                           <span class="truncate">${pl.username} ${stella}</span></div><b class="pl-2.5 pr-3" style="color:#40dacc">${pl.rate}</b></li>`;
                         });
                     }    
@@ -543,6 +550,10 @@
             gameFinishedHeader.classList.remove('hidden');
             gameStartedHeader.classList.add('hidden');
             guessForm.classList.add('hidden');
+            if (isMobile) {
+                gameHeader.classList.remove("hidden");
+            }
+
 
             if (document.getElementById('show_radar').checked) {
                 setTimeout(() => { hideRadar(); }, 5000);
@@ -607,7 +618,7 @@
                 let seconds = timeRemaining % 60;
 
                 if ((timeRemaining < 120) && (!color_changed)) {
-                    document.getElementById('timer-block').classList.replace('text-indigo-600', 'text-red-600');
+                    document.getElementById('timer-block').classList.replace('text-blue-600', 'text-red-600');
                     document.getElementById('timer-block').classList.replace('bg-amber-50', 'bg-red-50');
                     color_changed = true;
                 } else if (timeRemaining < 20) {

@@ -63,6 +63,7 @@
 
     #game-card { padding-top: 15px !important; padding: 15px; }    
     #game_started_header { flex-direction: column; gap: 15px; }
+    #hidden-word { font-size: 1.0rem; }
     #guess-form { flex-direction: column; }
     #word-input {
         width: 100%;
@@ -107,7 +108,7 @@
 
 }
 
-b {color: #a200ff; }
+b {color: rgb(21, 93, 252); }
 
 .radar-line-1 {
     width: 400px;

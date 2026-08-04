@@ -237,14 +237,14 @@ async def make_guess(
 
             is_correct = similarity_percent >= success_treshold
             if is_correct:
-                similarity_percent = 100.0
+                similarity_percent = 100
 
         # Обновляем состояние игры
         await the_game_state_update(current_user.userid, game_data.game_id, player_data["player_id"], payload.word, game_data.secret_word, similarity_percent, request.app.state, session)
 
         attempts = player_data["attempts"] + 1
 
-        return GuessResponse(status = "OK", word = payload.word, similarity = round(similarity_percent, 2), is_correct = is_correct, attempts = attempts)
+        return GuessResponse(status = "OK", word = payload.word, similarity = round(similarity_percent, 0), is_correct = is_correct, attempts = attempts)
     else:
         return GuessResponse(status = "CLOSED", word = "", similarity = 0, is_correct = False, attempts = 0)
 
