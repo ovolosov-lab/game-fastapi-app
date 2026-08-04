@@ -151,6 +151,7 @@
         let firstGuess = null;
         let toastTimeout;
         let isSubmitting = false;
+        let last_word = "";
 
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         const welcomeCard = document.getElementById('welcome-card');
@@ -325,6 +326,7 @@
 
                         // Если слово угадано на 100%
                         if (data.is_correct) {
+                            last_word = data.word;
                             endGame(true, `{{Congratulations}} "${data.word}"! 🎯 🎉`);
                         }
 
@@ -514,13 +516,14 @@
                         } else {
                             tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-emerald-300"></span>{{game_finished}} <b>${data.game_id}</b> {{game_finished2}}</li>`;
                         }
-                    } else {       // alert(data.remaining_time); 
+                    } else {      
+                        last_word = data.last_secret_word;                        
                         tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 mw8 rounded-full bg-emerald-300"></span>{{stats_game1}}<b>${data.game_id}</b>{{stats_game2}}</li>
                                     <li class="flex items-center gap-3"><span class="h-2 mw8 rounded-full bg-emerald-300"></span>{{participants}}<b>${data.participants}</b></li>
                                     <li class="flex items-center gap-3"><span class="h-2 mw8 rounded-full bg-emerald-300"></span>{{att1}}<b>${data.total_attempts}</b>{{att2}}</li>
                                     <li class="flex items-center gap-3"><span class="h-2 mw8 rounded-full bg-emerald-300"></span>{{timeleft1}}<b>${Math.round(data.remaining_time/60)}</b>{{timeleft2}}</li>`;
                     }                  
-                    tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 mw8 rounded-full bg-emerald-300"></span>{{previous}} <b>${data.last_secret_word}</b></li>`;
+                    tmp_stats += `<li class="flex items-center gap-3"><span class="h-2 mw8 rounded-full bg-emerald-300"></span>{{previous}} <b>${last_word}</b></li>`;
                     let playersScores = `<div class="h-[180px] w-[200px] border border-blue-950/40 rounded-2xl p-3 bg-blue-600 overflow-y-auto" id="users-rates"><ul class="space-y-3 font-medium text-white text-sm">`;
                     
                     if (data.players) {
