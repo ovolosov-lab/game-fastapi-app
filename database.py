@@ -258,7 +258,7 @@ async def create_new_game(session_factory: async_sessionmaker, app_state, force:
         async with session_factory() as session: 
             try:
                 logger.info("Начало создания новой игры ...")
-                # Выбираем случайное слово из английского словаря ('en')
+                # Выбираем случайное слово 
                 select_word_query = text("""
                     SELECT w.id, w.word FROM words w 
                     WHERE w.language = :lang AND w.id NOT IN (SELECT g.secret_word_id FROM games g ORDER BY g.id DESC LIMIT 10) 
@@ -284,7 +284,7 @@ async def create_new_game(session_factory: async_sessionmaker, app_state, force:
                 if old_game_id or force:
                     finish_query = text("DELETE FROM players WHERE gameid < :gameid - 1")
                     await session.execute(finish_query, {"gameid": old_game_id})
-                    logger.info("Текущая (старая) игра завершена!")
+                    logger.info(f"Текущая (старая) игра {old_game_id} завершена!")
                     # Фиксируем НОВУЮ игру в таблице games
                     insert_game_query = text("INSERT INTO games (secret_word_id, language) VALUES (:word_id, :lang)  RETURNING id")
                     result = await session.execute(insert_game_query, {"word_id": word_data.id, "lang": language})
@@ -296,7 +296,7 @@ async def create_new_game(session_factory: async_sessionmaker, app_state, force:
                     await fill_hints_cache(new_game_id, word_data.word, language, session, app_state)
                     return True
                 else:
-                    logger.warning("Нельзя завершить игру, которая только-что началась!")
+                    logger.warning(f"Нельзя завершить игру {old_game_id}, которая только-что началась!")
                     return False
             except Exception as e:
                 await session.rollback() 
@@ -358,7 +358,7 @@ async def check_the_game_duration(session_factory: async_sessionmaker, app_state
         await create_new_game(session_factory, app_state, False)  
 
 
-async def get_hint(gameid: int, userid: int, language:str, session: SessionDep, request: Request) -> HintResponse:  
+async def manage_hint(gameid: int, userid: int, language:str, session: SessionDep, request: Request) -> HintResponse:  
     sql = text("SELECT count(*) as cnt FROM sessions s INNER JOIN players p ON p.id=s.playerid INNER JOIN games g ON g.id=p.gameid WHERE p.userid = :userid AND p.gameid = :gameid AND g.finished IS NULL")
     res = await session.execute(sql, {"userid": userid, "gameid": gameid})
     row = res.first()
@@ -367,15 +367,16 @@ async def get_hint(gameid: int, userid: int, language:str, session: SessionDep, 
     if row.cnt < 5: 
         return HintResponse(result="NO", first_letter="", second_letter="", last_letter="", analogues=[], anagram="", ai="")
 
-    level: int = row.cnt 
-    hintResponse: HintResponse = get_hints_from_cache(request, level) 
+    attempts: int = row.cnt 
+    hintResponse: HintResponse = get_hints_from_cache(request, attempts) 
 
-    if level > 4:
-        sql = text("UPDATE players SET hints=:hints WHERE userid = :userid AND gameid = :gameid AND hints < :hints;")
-        level = level // 5
-        await session.execute(sql, {"userid": userid, "gameid": gameid, "hints": level})
-        await session.commit() 
-    logger.info(f"ํПользователем {userid} в игре {gameid} запрошено {level} подсказок")  
+    if attempts > 4 and attempts < 26:
+        if attempts < 21 or len(hintResponse.analogues) > 1 or hintResponse.second_letter != "":
+            sql = text("UPDATE players SET hints=:hints WHERE userid = :userid AND gameid = :gameid AND hints < :hints;")
+            level : int = attempts // 5 
+            await session.execute(sql, {"userid": userid, "gameid": gameid, "hints": level})
+            await session.commit() 
+            logger.info(f"ํПользователем {userid} в игре {gameid} запрошено {level} подсказок")  
 
     return hintResponse     
 
@@ -386,7 +387,8 @@ async def get_players_stats (session: SessionDep):
         SUM(CASE WHEN w.id = (SELECT MAX(z.id) FROM winners z) THEN w.scores ELSE 0 END) AS last_winner 
         FROM users u LEFT OUTER JOIN winners w ON u.userid=w.userid 
         GROUP BY u.username
-        ORDER BY COALESCE(SUM(w.scores),0) DESC;      """)
+        ORDER BY COALESCE(SUM(w.scores),0) DESC;      
+    """)
     res = await session.execute(sql)
     return res.mappings().all()
 
@@ -407,21 +409,26 @@ def get_hints_from_cache(request, level: int) -> HintResponse:
         logger.info(f"Первая подсказка '{first_letter}' получена из кэша")
         result = "YES"
     
-    if level > 9: 
+    if level > 9:
+        last_letter = hint_cache.last_letter
+        logger.info(f"Вторая подсказка  '{last_letter}' получена из кэша")
+
+    if level > 14: 
         analogues = hint_cache.analogues
-        logger.info(f"Вторая подсказка {str(analogues)} получена из кэша")
+        logger.info(f"Третья подсказка {str(analogues)} получена из кэша")
         if hint_cache.size > 3 and len(analogues) < 1:   
             second_letter = hint_cache.second_letter 
+        if len(analogues) < 1 and second_letter == "": 
+            ai = hint_cache.ai
     
-    if level > 14:
-        last_letter = hint_cache.last_letter
-        logger.info(f"Третья подсказка  '{last_letter}' получена из кэша")
-    
-    if level > 19: 
-        ai = hint_cache.ai
+    if level > 19:
+        if ai == "": 
+            ai = hint_cache.ai
+        else: 
+            anagram = hint_cache.anagram
         logger.info(f"Четвертая подсказка '{ai}' получена из кэша")
 
-    if level > 24:     
+    if level > 24 and anagram == "":     
         anagram = hint_cache.anagram
         logger.info(f"ПЯТАЯ подсказка '{ai}' получена из кэша")
 
@@ -439,19 +446,20 @@ async def fill_hints_cache(gameid: int, word: str, language: str, session: Sessi
     hint_cache.anagram = "".join(sorted(word))
     hint_cache.size = len(word)
     hint_cache.result = "YES"
-  
-    sql = text("""SELECT DISTINCT T.word FROM (
-        SELECT w.word 
-        FROM words w   
-        WHERE w.language=:lang AND w.word != (SELECT z.word FROM words z INNER JOIN games g ON g.secret_word_id=z.id WHERE g.id=:gameid1 LIMIT 1)
-        AND (w.embedding <=> (SELECT z.embedding FROM words z INNER JOIN games g ON g.secret_word_id=z.id WHERE g.id=:gameid2 LIMIT 1)) < 0.85 AND w.word != 'word' 
-        ORDER BY (w.embedding <=> (SELECT z.embedding FROM words z INNER JOIN games g ON g.secret_word_id=z.id WHERE g.id=:gameid3 LIMIT 1)) 
-        LIMIT 3     
-    ) T;""")
-    res = await session.execute(sql, {"lang": language, "gameid1": gameid, "gameid2": gameid, "gameid3": gameid})
-    words_list = list(res.scalars().all())
-    if words_list:
-        hint_cache.analogues = words_list 
+
+    if language != "ru":
+        sql = text("""SELECT DISTINCT T.word FROM (
+            SELECT w.word 
+            FROM words w   
+            WHERE w.language=:lang AND w.word != (SELECT z.word FROM words z INNER JOIN games g ON g.secret_word_id=z.id WHERE g.id=:gameid1 LIMIT 1)
+            AND (w.embedding <=> (SELECT z.embedding FROM words z INNER JOIN games g ON g.secret_word_id=z.id WHERE g.id=:gameid2 LIMIT 1)) < 0.85 AND w.word != 'word' 
+            ORDER BY (w.embedding <=> (SELECT z.embedding FROM words z INNER JOIN games g ON g.secret_word_id=z.id WHERE g.id=:gameid3 LIMIT 1)) 
+            LIMIT 3     
+        ) T;""")
+        res = await session.execute(sql, {"lang": language, "gameid1": gameid, "gameid2": gameid, "gameid3": gameid})
+        words_list = list(res.scalars().all())
+        if words_list:
+            hint_cache.analogues = words_list 
 
     if app_state.ai_enabled:    
         hint_cache.ai = await create_ai_description(word, language, app_state)   

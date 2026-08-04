@@ -19,7 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from openai import AsyncOpenAI
 
 from config import BASE_DIR, ERROR_MESSAGES_EN, ERROR_MESSAGES_RU, MODEL_PATH, settings, logger
-from database import SessionDep, check_the_game_duration, check_the_player_involved, check_user, create_new_game, engine, create_all_tables, db_connection_check, get_hint, get_players_stats, get_the_game_statistic, user_exists, the_game_state_update, new_session
+from database import SessionDep, check_the_game_duration, check_the_player_involved, check_user, create_new_game, engine, create_all_tables, db_connection_check, manage_hint, get_players_stats, get_the_game_statistic, user_exists, the_game_state_update, new_session
 from schemas import GuessRequest, GuessResponse, HintCache, NewUser, User, UserInfo, WordsDataInfo
 from services import AsyncPeriodicTask, create_new_user, get_err_message, load_internationalization_data
 from tokens import create_access_token, get_current_user
@@ -40,9 +40,6 @@ async def lifespan(app: FastAPI):
     app.state.process_lock = asyncio.Lock()
     app.state.stored_hint = HintCache(result="NO", word="", first_letter="", second_letter="", last_letter="", analogues=[], ai="", anagram="", gameid=0, size=0)     
 
-    periodic_task = AsyncPeriodicTask(interval=settings.check_interval, task_func=lambda: check_the_game_duration(new_session, app.state))
-    periodic_task.start()    
-
     logger.info("Загрузка ML моделей...")
     app.state.embedder = TextEmbedding(
         model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
@@ -60,8 +57,10 @@ async def lifespan(app: FastAPI):
         app.state.ai_enabled = False
         logger.exception("Ошибка загрузки модели")
     
+    await create_new_game(new_session, app.state, True) 
 
-    await create_new_game(new_session, app.state, True)
+    periodic_task = AsyncPeriodicTask(interval=settings.check_interval, task_func=lambda: check_the_game_duration(new_session, app.state))
+    periodic_task.start()    
 
     yield
 
@@ -326,7 +325,7 @@ async def join_the_game(session: SessionDep, current_user: UserInfo = Depends(ge
 
 @app.get("/game/help/{game_id}", tags=["Game", "game session, hinsts", "hint"], summary="Get the Hint")
 async def get_the_help(request: Request, game_id: int, session: SessionDep, current_user: UserInfo = Depends(get_current_user)):  
-    return await get_hint(game_id, current_user.userid, current_user.lang, session, request)     
+    return await manage_hint(game_id, current_user.userid, current_user.lang, session, request)     
 
 
 @app.exception_handler(HTTPException)

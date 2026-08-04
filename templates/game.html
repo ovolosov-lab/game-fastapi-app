@@ -70,7 +70,7 @@
 
             <!-- Форма отправки догадки -->
             <form id="guess-form" class="flex space-x-2 mb-6">
-                <input type="text" id="word-input" required placeholder="{{enter_the_word}}" 
+                <input type="text" id="word-input" placeholder="{{enter_the_word}}" 
                        class="flex-grow border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
                 <button type="submit" id="submit-guess-btn" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition">
                     {{check}}
@@ -150,6 +150,7 @@
         let prevGuess = null;
         let firstGuess = null;
         let toastTimeout;
+        let isSubmitting = false;
 
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         const welcomeCard = document.getElementById('welcome-card');
@@ -172,6 +173,7 @@
         const quitBtn = document.getElementById('quit-btn');
         const stats = document.getElementById('stats-grid');
         const gameHeader = document.getElementById('game-header');
+        const submitBtn = document.getElementById('submit-guess-btn');
 
 
         // ЗАКОНЧИТЬ ИГРУ - вернуться в Статистику игр 
@@ -240,7 +242,7 @@
 
                     gameStatusMsg.classList.add('hidden');
                     wordInput.disabled = false;
-                    document.getElementById('submit-guess-btn').disabled = false;
+                    submitBtn.disabled = false;
                     document.getElementById('timer-block').classList.replace('text-red-600', 'text-blue-600');
                     document.getElementById('timer-block').classList.replace('bg-red-50', 'bg-amber-50');
                     document.getElementById('timer-block').classList.remove('timer-urgent');
@@ -274,6 +276,7 @@
         // ОТПРАВКА СЛОВА ИГРОКОМ
         guessForm.addEventListener('submit', async (e) => {
             e.preventDefault(); 
+            if (isSubmitting) return;
             if (document.activeElement) {
                 document.activeElement.blur();
             }    
@@ -281,7 +284,7 @@
             const userWord = wordInput.value.trim();
             if (!userWord) return;
     
-            const submitBtn = document.getElementById('submit-guess-btn');
+            isSubmitting = true;
             submitBtn.disabled = true;
             submitBtn.style.opacity = '0.5'; 
 
@@ -319,17 +322,11 @@
 
                         // Очищаем поле ввода для следующего слова
                         wordInput.value = '';
-                        if (!isMobile) {
-                            wordInput.focus();
-                        }
 
                         // Если слово угадано на 100%
                         if (data.is_correct) {
                             endGame(true, `{{Congratulations}} "${data.word}"! 🎯 🎉`);
                         }
-
-                        submitBtn.disabled = false;
-                        submitBtn.style.opacity = '1';
 
                         if (attempts > 4) {
                             let hints_level = attempts // 5
@@ -343,16 +340,30 @@
                 }
             } catch (error) {
                 console.error('{{word_check_error}}', error);
+            } finally {    
+                isSubmitting = false;
                 submitBtn.disabled = false;
                 submitBtn.style.opacity = '1';
+                if (!isMobile) {
+                    wordInput.focus();
+                }
             }
         });
+
+
+        // УСКОРИТЕЛЬ ДЛЯ МОБИЛЬНЫХ НА POINTERDOWN
+        submitBtn.addEventListener('pointerdown', (e) => {
+            if (e.pointerType === 'touch' || e.button === 0) {
+                if (isSubmitting || submitBtn.disabled) return;                
+                e.preventDefault(); 
+                guessForm.requestSubmit(); 
+            }
+        });        
 
 
         // обработка события КНОПКА "ЗАПРОСИТЬ ПОСКАЗКУ"  - заполнение диалога 
         helpBtn.addEventListener('click', open_hint_dlg ); 
         
-
         async function open_hint_dlg() 
         {
             if (attempts > 4) {
@@ -544,7 +555,7 @@
             isGameActive = false;
 
             wordInput.disabled = true;
-            document.getElementById('submit-guess-btn').disabled = true;
+            submitBtn.disabled = true;
             gameStatusMsg.innerHTML = message;
             gameStatusMsg.classList.remove('hidden');
             gameFinishedHeader.classList.remove('hidden');
