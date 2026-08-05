@@ -125,7 +125,7 @@ class Settings(BaseSettings):
     in_development: bool = False
     force_recreate_db: bool = False   
     language: str = "ru"
-    max_word_len: int = 15
+    max_word_len: int = 8
     game_duration: int = 3600 # продолжительность игры - 1 час
     check_interval: int = 60 # интервал проверки на "время игры истекло"
     ai_api_path: str = ""
