@@ -194,11 +194,14 @@
         }    
         
 
-        // НАЧАЛО ИГРЫ 
+        // НАЧАЛО ИГРЫ  ( GAME START !!! )
         async function handleStartClick() {
             try {
                 attempts = 0;
-                console.log("Начать игру! POST-Запрос к серверу /game/join/")
+                startBtn.style.opacity = '0.4';
+                console.log("Start the Game! POST-request to the back-end:  /game/join/")
+
+
                 const response = await fetch('/game/join/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -266,6 +269,8 @@
             } catch (error) {
                 console.error('New game start error:', error);
                 alert('{{connection_problems}}');
+            } finally {
+                startBtn.style.opacity = '1.0';
             }
         }
 
@@ -274,7 +279,7 @@
         quitBtn.addEventListener("click", handleQuitClick);
 
 
-        // ОТПРАВКА СЛОВА ИГРОКОМ
+        // ОТПРАВКА СЛОВА ИГРОКОМ ( to send the guessed word to the back-end )
         guessForm.addEventListener('submit', async (e) => {
             e.preventDefault(); 
             if (isSubmitting) return;

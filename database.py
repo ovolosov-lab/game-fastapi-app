@@ -186,6 +186,7 @@ async def check_the_player_involved(userid: int, gameid: int, language: str, for
                 cnt = row.cnt
             if cnt == 0:
                 settings.language = language
+
             # Try to insert new player record
             try:
                 sql = text("INSERT INTO players (userid, gameid, attempts, hints) VALUES (:userid, :gameid, 0, 0) RETURNING id")
@@ -240,9 +241,6 @@ async def the_game_state_update(userid: int, game_id: int, player_id: int, word:
         
         await session.commit()
         logger.success("Данные очередного хода успешно записаны в БД")
-
-        #if similarity_percent > 99.0:
-        #    await create_new_game(new_session, app_state, False)
         return True
     except Exception as e:
         await session.rollback() 
@@ -293,7 +291,7 @@ async def create_new_game(session_factory: async_sessionmaker, app_state, force:
 
                 if new_game_id:
                     logger.success(f"ํНовая игра {new_game_id} создана!")        
-                    await fill_hints_cache(new_game_id, word_data.word, language, session, app_state)
+                    # await fill_hints_cache(new_game_id, word_data.word, language, session, app_state)
                     return True
                 else:
                     logger.warning(f"Нельзя завершить игру {old_game_id}, которая только-что началась!")
@@ -327,6 +325,7 @@ async def get_the_game_statistic(userid, session: SessionDep):
                 g.started,  
                 1 AS total_participants,
                 COALESCE(p.attempts, 0) AS total_attempts,
+                w.word AS secret_word, 
                 LENGTH(w.word) as word_len, 
                 w.language, 
                 EXTRACT(EPOCH FROM (LOCALTIMESTAMP - g.started))::INTEGER AS seconds_passed, 
@@ -451,12 +450,12 @@ async def fill_hints_cache(gameid: int, word: str, language: str, session: Sessi
         sql = text("""SELECT DISTINCT T.word FROM (
             SELECT w.word 
             FROM words w   
-            WHERE w.language=:lang AND w.word != (SELECT z.word FROM words z INNER JOIN games g ON g.secret_word_id=z.id WHERE g.id=:gameid1 LIMIT 1)
+            WHERE w.language=:lang AND w.word != :word 
             AND (w.embedding <=> (SELECT z.embedding FROM words z INNER JOIN games g ON g.secret_word_id=z.id WHERE g.id=:gameid2 LIMIT 1)) < 0.85 AND w.word != 'word' 
             ORDER BY (w.embedding <=> (SELECT z.embedding FROM words z INNER JOIN games g ON g.secret_word_id=z.id WHERE g.id=:gameid3 LIMIT 1)) 
             LIMIT 3     
         ) T;""")
-        res = await session.execute(sql, {"lang": language, "gameid1": gameid, "gameid2": gameid, "gameid3": gameid})
+        res = await session.execute(sql, {"lang": language, "word": word, "gameid1": gameid, "gameid2": gameid, "gameid3": gameid})
         words_list = list(res.scalars().all())
         if words_list:
             hint_cache.analogues = words_list 
@@ -494,7 +493,7 @@ async def create_ai_description(word: str, language: str, app_state) -> str:
             {"role": "user", "content": prompt}
         ]
     )
-    # logger.info("обращение к АПИ модели ИИ")
+    logger.warning("обращение к АПИ модели GLM-5.2 !!!")
     content = response.choices[0].message.content
     # logger.info(response.choices)
     if content is None:

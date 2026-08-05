@@ -19,7 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from openai import AsyncOpenAI
 
 from config import BASE_DIR, ERROR_MESSAGES_EN, ERROR_MESSAGES_RU, MODEL_PATH, settings, logger
-from database import SessionDep, check_the_game_duration, check_the_player_involved, check_user, create_new_game, engine, create_all_tables, db_connection_check, manage_hint, get_players_stats, get_the_game_statistic, user_exists, the_game_state_update, new_session
+from database import SessionDep, check_the_game_duration, check_the_player_involved, check_user, create_new_game, engine, create_all_tables, db_connection_check, fill_hints_cache, manage_hint, get_players_stats, get_the_game_statistic, user_exists, the_game_state_update, new_session
 from schemas import GuessRequest, GuessResponse, HintCache, NewUser, User, UserInfo, WordsDataInfo
 from services import AsyncPeriodicTask, create_new_user, get_err_message, load_internationalization_data
 from tokens import create_access_token, get_current_user
@@ -68,7 +68,7 @@ async def lifespan(app: FastAPI):
     await engine.dispose()
 
     if app.state.ai_enabled:
-        app.state.llm.close()
+        await app.state.llm.close()
 
 app = FastAPI(lifespan=lifespan)
 
@@ -293,7 +293,7 @@ async def get_game_status(session: SessionDep, current_user: UserInfo = Depends(
 
 
 @app.post("/game/join/", tags=["Game", "game session", "join"], summary="Join the game")
-async def join_the_game(session: SessionDep, current_user: UserInfo = Depends(get_current_user)):
+async def join_the_game(request: Request, session: SessionDep, current_user: UserInfo = Depends(get_current_user)):
     player_data:dict = await check_the_player_involved(current_user.userid, 0, current_user.lang, True, session)
     if player_data["result"]:
         game_stats = await get_the_game_statistic(current_user.userid, session)
@@ -307,6 +307,9 @@ async def join_the_game(session: SessionDep, current_user: UserInfo = Depends(ge
 
         if remaining_time < 11: 
             return {"status": "waiting", "game_id": 0, "message": get_err_message("game_beginning", "he new game is about to start...", current_user.lang) }
+
+        if request.app.state.stored_hint.result == "NO" or request.app.state.stored_hint.gameid != game_stats.game_id:
+            await fill_hints_cache(game_stats.game_id, game_stats.secret_word, settings.language, session, request.app.state)
 
         return {
             "status": "active",
