@@ -248,6 +248,16 @@ b {color: rgb(21, 93, 252); }
   cursor: pointer;
 }
 
+.dots {
+    display: inline-block;
+    animation: blink 1.4s infinite both;
+}
+@keyframes blink {
+    0% { opacity: .2; }
+    20% { opacity: 1; }
+    100% { opacity: .2; }
+}
+
 @media (max-width: 767px) {
     .radar-word {
         font-size: 1.1rem;

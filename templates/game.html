@@ -135,7 +135,7 @@
     </div>    
 
     <div id="toast2" class="toast hidden">
-        <span id="toast_message" class="message">{{new_round}}</span>
+        <span id="toast_message" class="message dots">{{new_round}}</span>
         <span class="close-btn" onclick="hideToast('toast2')">×</span>
     </div>    
 
@@ -152,6 +152,7 @@
         let toastTimeout;
         let isSubmitting = false;
         let last_word = "";
+        const guesses = [];
 
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         const welcomeCard = document.getElementById('welcome-card');
@@ -180,6 +181,7 @@
         // ЗАКОНЧИТЬ ИГРУ - вернуться в Статистику игр 
         async function handleQuitClick() {
             currentGameId = 0;
+            guesses.length = 0;
             
             await fill_statistic();
             
@@ -198,7 +200,10 @@
         async function handleStartClick() {
             try {
                 attempts = 0;
-                startBtn.style.opacity = '0.4';
+                startBtn.style.opacity = '0.5';
+                startBtn.disabled = true;
+                startBtn.innerHTML = '{{starting_game}} <span class="dots">...</span>';
+
                 console.log("Start the Game! POST-request to the back-end:  /game/join/")
 
 
@@ -230,8 +235,10 @@
                     
                     if (isMobile) {
                         hiddenWord.style.fontSize = '1.0rem';    
-                    }    
-                    hiddenWord.innerText = `{{need2guess1}} ${data.word_len}{{need2guess2}} (${data.language})`;
+                    }  
+                    let lang = data.language.replace('en', 'gb');    
+                    hiddenWord.innerHTML = `{{need2guess1}} ${data.word_len}{{need2guess2}} <img src="https://flagcdn.com/16x12/${lang}.png" width="16" height="12" alt="${lang.toUpperCase()}">`;
+
                     startTimer(data.seconds_left);
 
                     attempts = data.total_attempts;
@@ -271,6 +278,8 @@
                 alert('{{connection_problems}}');
             } finally {
                 startBtn.style.opacity = '1.0';
+                startBtn.disabled = false;
+                startBtn.innerText = '{{start}}';
             }
         }
 
@@ -310,9 +319,12 @@
 
                 if (data.status == "CLOSED") {
                     console.log(`Текущая игра ${currentGameId} оказалась уже завершенной!`)
+                    guesses.length = 0;
                     endGame(false, "{{another_winner}}")
                 } else {    
                     if (data.word) {
+                        guesses.push(data);
+
                         if (document.getElementById('empty-history')) {
                             document.getElementById('empty-history').remove();
                         }
@@ -484,7 +496,9 @@
                 setTimeout(() => {
                     radarBlock.classList.add('opacity-100', 'scale-100');
                     radarBlock.classList.remove('opacity-0', 'scale-95');                
-                }, 10);            
+                }, 10);  
+                
+                guesses.forEach(data => { addWordToRadar(data.word, data.similarity); });
             }
         }
 
@@ -561,6 +575,7 @@
             clearInterval(timerInterval);
             joined_the_game = false;
             isGameActive = false;
+            guesses.length = 0;
 
             wordInput.disabled = true;
             submitBtn.disabled = true;

@@ -69,5 +69,6 @@
     "game_finished": "Game", 
     "game_finished2": "Completed", 
     "player_earned1": "You scored", 
-    "player_earned2": "points in your last game"     
+    "player_earned2": "points in your last game",
+    "starting_game": "Let's create a game"     
 }

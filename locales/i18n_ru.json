@@ -69,5 +69,6 @@
     "game_finished": "Завершена игра", 
     "game_finished2": "", 
     "player_earned1": "Вы набрали", 
-    "player_earned2": "баллов в последней игре"
+    "player_earned2": "баллов в последней игре", 
+    "starting_game": "Создаем игру"
 }   

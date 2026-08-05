@@ -69,5 +69,6 @@
     "game_finished": "Partie n°", 
     "game_finished2": "terminée",
     "player_earned1": "Lors de votre dernier match, vous avez marqué", 
-    "player_earned2": "ps."     
+    "player_earned2": "ps.", 
+    "starting_game": "Créons un jeu"        
 }
