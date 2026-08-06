@@ -89,7 +89,7 @@
             </div>
 
         </div>
-        <div id="radar-block" class="right-block bg-white rounded-2xl shadow-sm border border-slate-200 transition-all duration-1000 opacity-0 hidden">
+        <div id="radar-block" class="right-block bg-white rounded-2xl shadow-sm border border-slate-200 transition-all duration-1000 panel opacity-0 hidden">
             <!--  ЭКРАН РАДАРА  -->
             <div class="radar-container" id="radar">
                 <div class="radar-line-1 radar-lines">
@@ -231,13 +231,11 @@
                         gameHeader.classList.add("hidden");
                     }
 
-                    show_radar(false);
-                    
                     if (isMobile) {
                         hiddenWord.style.fontSize = '1.0rem';    
                     }  
                     let lang = data.language.replace('en', 'gb');    
-                    hiddenWord.innerHTML = `{{need2guess1}} ${data.word_len}{{need2guess2}} <img src="https://flagcdn.com/16x12/${lang}.png" width="16" height="12" alt="${lang.toUpperCase()}">`;
+                    hiddenWord.innerHTML = `{{need2guess1}} ${data.word_len}{{need2guess2}} <img src="https://flagcdn.com/16x12/${lang}.png" width="16" height="12" alt="${lang.toUpperCase()}" style="display:inline">`;
 
                     startTimer(data.seconds_left);
 
@@ -259,6 +257,11 @@
                     document.getElementById('timer-block').classList.remove('timer-urgent');
                     helpBtn.className = "text-sm border border-blue-200 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent";
                     helpBtn.disabled = true;
+
+                    if (attempts > 4) {
+                        helpBtn.disabled = false;
+                        helpBtn.className = "text-sm font-semibold border border-blue-300 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition";
+                    }
 
                     wordInput.focus();
                 } else { 
@@ -504,14 +507,11 @@
 
         // ПЛАВНОЕ ЗАКРЫТИЕ РАДАРА
         function hideRadar() {
-            radarBlock.classList.add('opacity-0', 'scale-95');
-            radarBlock.classList.remove('opacity-100', 'scale-100');
-            
-            radarBlock.addEventListener('transitionend', function handler() {
+            if ((currentGameId == 0) || (!document.getElementById('show_radar').checked)) {
+                radarBlock.classList.add('opacity-0', 'scale-95');
+                radarBlock.classList.remove('opacity-100', 'scale-100');
                 radarBlock.classList.add('hidden');
-                
-                radarBlock.removeEventListener('transitionend', handler);
-            });
+            }
         }
 
 
@@ -732,7 +732,7 @@
         }
 
         document.getElementById('show_radar').addEventListener('change', () => {
-            if (event.target.checked) {
+            if (document.getElementById('show_radar').checked) {
                 show_radar(true);
             } else {
                 hideRadar();
@@ -759,7 +759,7 @@
             // Убираем старый таймер, если он был
             clearTimeout(toastTimeout);
             // Скрываем автоматически через 6 секунды
-            toastTimeout = setTimeout(() => { hideToast(id); }, 6000);
+            toastTimeout = setTimeout(() => { hideToast(id); }, 5000);
         }
 
         function hideToast(id) {
@@ -772,6 +772,7 @@
 
 
         if (window.innerWidth < 768) {
+            console.log('Show_radar disabled - window.innerWidth = '+window.innerWidth);
             document.querySelector('#show_radar').disabled = true;
         }
         // Вход сразу в блок текущей игры, если пользовавтель еще не завершил эту игру

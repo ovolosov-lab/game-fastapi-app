@@ -10,6 +10,7 @@
 
 .center-block {
   grid-column: 2; 
+   box-shadow: inset 0 0 8px rgba(0,0,0,0.4); 
 }
 
 .right-block {
@@ -37,6 +38,30 @@
     border-radius: 50%; 
     margin: 10px auto;
     overflow: hidden;
+}
+
+@media (max-width: 1560px) {
+    .radar-container {  transform-origin: top 50%; transform: scale(0.9);  }
+}
+
+@media (max-width: 1490px) {
+    .radar-container {  transform-origin: top 20%; transform: scale(0.8);  }
+}
+
+@media (max-width: 1430px) {
+    .radar-container {  transform-origin: top left; transform: scale(0.75);  }
+    #radar-block {
+        padding-left: 5%;
+    }
+}
+
+@media (max-width: 1250px) {
+    #radar-block {
+        display: none;
+    }
+    #show-radar-div {
+        display: none;
+    }
 }
 
 @media (max-width: 767px) {
@@ -218,7 +243,7 @@ b {color: rgb(21, 93, 252); }
 
 .toast {
   position: fixed;
-  top: 30%;
+  top: 40%;
   left: calc(100vw / 2);
   background-color: #ffffff;
   color: rgb(70, 33, 33);
@@ -266,3 +291,48 @@ b {color: rgb(21, 93, 252); }
         font-size: 0.7rem;
     }
 }    
+
+.panel {
+  position: relative; /* База для позиционирования винтов */
+  /* background: #4a4d53;  */
+  /* border: 2px solid #333; */
+  box-shadow: inset 0 0 8px rgba(0,0,0,0.4); 
+  /* padding: 10px; */
+  box-sizing: border-box;
+}
+
+/* Создаем шляпки винтов по углам */
+.panel::before,
+.panel::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  /* Рисуем металлическую шляпку и прорезь (шлиц) отвертки */
+  background: 
+    linear-gradient(90deg, transparent 45%, #22222299 45%, #22222236 55%, transparent 55%), /* Шлиц */
+    radial-gradient(circle, #888 30%, #55555566 70%, #333 100%); /* Объем шляпки */
+  box-shadow: 
+    inset -1px -1px 2px rgba(255,255,255,0.4),
+    1px 1px 3px rgba(0,0,0,0.8); /* Тень от винта на панели */
+}
+
+/* Позиционируем левый верхний и правый нижний винты */
+.panel::before {
+  top: 8px;
+  left: 8px;
+  /* Дублируем винт в правый нижний угол с помощью множественного box-shadow */
+  box-shadow: 
+    inset -1px -1px 2px rgba(255,255,255,0.4),
+    1px 1px 3px rgba(0,0,0,0.8)
+    /* 580px 580px 3px rgba(0,0,0,0.8);  */
+}
+
+/* Позиционируем правый верхний и левый нижний винты */
+.panel::after {
+  top: 8px;
+  right: 8px;
+  /* Поворачиваем шлиц для реалистичности, чтобы винты не выглядели одинаково */
+  transform: rotate(45deg); 
+}

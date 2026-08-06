@@ -309,7 +309,7 @@ async def join_the_game(request: Request, session: SessionDep, current_user: Use
             return {"status": "waiting", "game_id": 0, "message": get_err_message("game_beginning", "he new game is about to start...", current_user.lang) }
 
         if request.app.state.stored_hint.result == "NO" or request.app.state.stored_hint.gameid != game_stats.game_id:
-            await fill_hints_cache(game_stats.game_id, game_stats.secret_word, settings.language, session, request.app.state)
+            await fill_hints_cache(game_stats.game_id, game_stats.secret_word, game_stats.language, session, request.app.state)
 
         return {
             "status": "active",

@@ -450,12 +450,12 @@ async def fill_hints_cache(gameid: int, word: str, language: str, session: Sessi
         sql = text("""SELECT DISTINCT T.word FROM (
             SELECT w.word 
             FROM words w   
-            WHERE w.language=:lang AND w.word != :word 
-            AND (w.embedding <=> (SELECT z.embedding FROM words z INNER JOIN games g ON g.secret_word_id=z.id WHERE g.id=:gameid2 LIMIT 1)) < 0.85 AND w.word != 'word' 
-            ORDER BY (w.embedding <=> (SELECT z.embedding FROM words z INNER JOIN games g ON g.secret_word_id=z.id WHERE g.id=:gameid3 LIMIT 1)) 
+            WHERE w.language=:lang AND w.word != :word0 
+            AND (w.embedding <=> (SELECT z.embedding FROM words z WHERE z.word=:word1 LIMIT 1)) < 0.40 AND w.word != 'word' 
+            ORDER BY (w.embedding <=> (SELECT z.embedding FROM words z WHERE z.word=:word2 LIMIT 1)) 
             LIMIT 3     
         ) T;""")
-        res = await session.execute(sql, {"lang": language, "word": word, "gameid1": gameid, "gameid2": gameid, "gameid3": gameid})
+        res = await session.execute(sql, {"lang": language, "word0": word, "word1": word, "word2": word})
         words_list = list(res.scalars().all())
         if words_list:
             hint_cache.analogues = words_list 
