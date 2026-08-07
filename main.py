@@ -155,7 +155,7 @@ async def add_user(new_user: Annotated[NewUser, Form()], session: SessionDep) ->
 async def home_page(session: SessionDep, request: Request, current_user: UserInfo = Depends(get_current_user)):
     i18n_data: dict = load_internationalization_data(current_user.lang)
     player_data: dict = await check_the_player_involved(current_user.userid, 0, current_user.lang, False, session)
-    data = {"username": current_user.username, "joined_the_game": "True" if player_data["result"] == True else "False", "language": current_user.lang}
+    data = {"username": current_user.username, "joined_the_game": "True" if player_data["result"] == True else "False", "language": current_user.lang.replace("en","gb")}
     return templates.TemplateResponse(request, "game.html", {"request": request, **data, **i18n_data})
 
 
