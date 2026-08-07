@@ -19,7 +19,7 @@
 }
 
 #start-btn { margin-bottom: 15px; cursor:pointer; }
-
+#timer-container { padding-left: 8px; }
 #history-list {  height: calc(100vh - 440px);   border: 1px solid rgb(240, 244, 250); border-radius: 7px; }
 
 #stats-grid ul li { font-size:0.8rem; }

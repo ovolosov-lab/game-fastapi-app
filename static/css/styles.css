@@ -147,9 +147,9 @@ body {
 /* Стилизация текстовой метки и создание кастомного кружка */
 .radio-item label {
   position: relative;
-  padding-left: 32px;
+  font-size: 0.8rem;
+  padding-left: 25px;
   cursor: pointer;
-  font-size: 0.9rem;
   color: #333333;
   user-select: none;
   display: inline-flex;
