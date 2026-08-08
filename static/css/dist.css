@@ -547,6 +547,9 @@
   .bg-blue-700 {
     background-color: var(--color-blue-700);
   }
+  .bg-deep-space {
+    background-color:#282b55;
+  }
   .bg-emerald-100 {
     background-color: var(--color-emerald-100);
   }
@@ -840,6 +843,9 @@
     }
     .hover\:bg-slate-200:hover {
       background-color: var(--color-slate-200);
+    }
+    .hover\:bg-deep-space:hover {
+      background-color:#282b55;
     }
   }
   .focus\:border-transparent:focus {

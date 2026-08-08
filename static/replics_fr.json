@@ -1,0 +1,48 @@
+{
+  "start": [
+    "Attention! Captain on the bridge!",
+    "Our mission: Boldly go where no man has gone before! Warp drives at maximum!", 
+    "These are the voyages of the starship Enterprise. Its continuing mission: to explore strange new worlds and words, to seek out new life and new civilizations...",
+    "Computer, begin simulation. First Contact Protocol activated. Send our first word!",
+    "Full speed ahead! Fasten your seatbelts, we're about to jump!",
+    "Computer, run the simulation. It's time to boldly go where no man has gone before. Ready!",
+    "We're engaging warp engines. The main thing is to not panic and keep your towel ready!", 
+    "Attention, crew! Encrypted transmission from an unknown civilization detected!",
+    "The onboard linguistic processor is ready to decipher a message from an unknown civilization. Enter the first word for calibration!"
+  ],  
+  "cold": [
+    "The sensors are silent, Captain. This sector of space is absolute zero.",
+    "The sensors are silent, Captain. Radar is detecting only cosmic noise in this sector. We need to change the search vector.",
+    "Captain, we're flying into the deep void. The onboard computer recommends a turn.",
+    "They still don't understand us and we're losing contact with them! Try sending just one word!", 
+    "We're at the very edge of the galaxy, sir! We need to jump in the opposite direction!"
+  ],
+  "warm": [
+    "Caught a weak impulse! The energy of similarity is growing.",
+    "The sensors have detected a residual trace. We are crossing the desired meridian.",
+    "We have a weak contact, sir! The object is somewhere in this quadrant!",
+    "The anomaly is responding to our words. Keep up the good work!",
+    "Radar picked up a weak gravitational wave! We've found the right quadrant, but the meaning of their messages is still unclear."
+  ],
+  "hot": [
+    "The signal is becoming stable, Captain! We're definitely on the right track, but the target star system hasn't been identified yet.",
+    "We have a stable frequency lock! The onboard computer confirms the heading, continue scanning the sector.",
+    "The radar indicators came to life. Telemetry is strong, sir, but we need a little more data before we can narrow down the search area.",
+    "We're definitely on to something! The main thing is to keep up the pace; our destination is close!"
+  ],
+  "very_hot": [
+    "We're on course, Captain! A little more precision and we'll make contact!",
+    "Momentum is at its peak! We're literally on the threshold of scientific discovery!",
+    "Instrument readings are off the charts, Captain! Target is dead ahead – adjust your last jump data!",
+    "The vector is perfect! One more precise jump and we're there!",
+    "The station's magnetic field has captured our ship. We're very close!",
+    "The decryption is almost complete, sir! The universal translator is close to compiling a complete alien dictionary!"
+  ],
+  "win": [
+    "Victory, Captain! The aliens are inviting us to visit them! We're docking.",
+    "Target identified! You've solved this cosmic mystery. We're going hyperspeed!",
+    "Contact established, Captain! The crew celebrates victory. You are a navigational genius!", 
+    "The universal translator is ready to go. Congratulations, Captain, First Contact has officially taken place!",
+    "Decryption successful, Captain! Mission accomplished!"
+  ]
+}

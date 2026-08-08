@@ -15,7 +15,7 @@
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-xl font-bold tracking-wide">{{program_banner}}</h1>
             <span><span class="text-sm text-blue-600 bg-amber-50 px-3 py-1 rounded-full">{{username}}</span>
-            <img src="https://flagcdn.com/16x12/{{language}}.png" width="16" height="12" alt="{{language}}" style="display:inline; margin-left:10px;"></span>
+            <img src="/static/{{language}}.png" width="16" height="12" alt="{{language}}" style="display:inline; margin-left:10px;"></span>
         </div>
     </header>
 
@@ -73,7 +73,7 @@
             <form id="guess-form" class="flex space-x-2 mb-6">
                 <input type="text" id="word-input" placeholder="{{enter_the_word}}" 
                        class="flex-grow border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
-                <button type="submit" id="submit-guess-btn" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition">
+                <button type="submit" id="submit-guess-btn" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-deep-space transition">
                     {{check}}
                 </button>
             </form>
@@ -105,7 +105,35 @@
                 </div>
                 </div>
                 </div>
-            </div>        
+            </div>  
+            
+            <div class="star-trek-panel">
+                <!-- Шапка панели в стиле LCARS, повторяющая цвета вашего радара -->
+                <div class="panel-header">
+                    <div class="panel-bar deep-blue"></div>
+                    <div class="panel-indicator">SPACE SCANNER - USS Enterprise NX-01</div>
+                    <div class="panel-bar deep-blue"></div>
+                </div>
+
+                <!-- Основной контент панели -->
+                <div class="panel-body">
+                    <!-- Боковая закругленная панель управления (в цвет рамки плашек слов) -->
+                    <div class="panel-sidebar">
+                        <span class="sidebar-text">RADAR</span>
+                        <span class="sidebar-text">SYS.OK</span>
+                    </div>
+      
+                    <!-- Текстовый блок для фраз с эффектом свечения экрана -->
+                    <div class="panel-content">
+                        <p id="radar-message"></p><span class="cursor">|</span>
+                    </div>
+                </div>
+
+                <!-- Нижняя закрывающая рамка -->
+                <div class="panel-footer">
+                    <div class="panel-bar deep-blue"></div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -151,8 +179,10 @@
         let prevGuess = null;
         let firstGuess = null;
         let toastTimeout;
+        let messTimeout;
         let isSubmitting = false;
         let last_word = "";
+        let have_replics = false;
         const guesses = [];
 
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -177,6 +207,8 @@
         const stats = document.getElementById('stats-grid');
         const gameHeader = document.getElementById('game-header');
         const submitBtn = document.getElementById('submit-guess-btn');
+        const messageElement = document.getElementById('radar-message');
+        const replics = {}
 
 
         // ЗАКОНЧИТЬ ИГРУ - вернуться в Статистику игр 
@@ -236,7 +268,7 @@
                         hiddenWord.style.fontSize = '1.0rem';    
                     }  
                     let lang = data.language.replace('en', 'gb');    
-                    hiddenWord.innerHTML = `{{need2guess1}} ${data.word_len}{{need2guess2}} <img src="https://flagcdn.com/16x12/${lang}.png" width="16" height="12" alt="${lang.toUpperCase()}" style="display:inline">`;
+                    hiddenWord.innerHTML = `{{need2guess1}} ${data.word_len}{{need2guess2}} <img src="/static/${lang}.png" width="16" height="12" alt="${lang.toUpperCase()}" style="display:inline">`;
 
                     startTimer(data.seconds_left);
 
@@ -358,7 +390,12 @@
                             if ((attempts % 5) == 0) {
                                 showToast("💡 {{placeholder1}}", "toast")
                             }
+
                         }
+                        if ((attempts % 3) == 0) {
+                            // typeMessage("Мы на верном курсе, капитан! Еще чуть точнее, и мы найдем эту космическую станцию.");
+                        }
+
                     }    
                 }
             } catch (error) {
@@ -450,21 +487,29 @@
             row.className = "flex justify-between items-center p-3 rounded-xl border transition shadow-sm ";
 
             let smile = "🎯";
+            let state = 'cold';
 
             if (isCorrect) {
+                state = 'win';
                 row.className += "bg-emerald-100 border-emerald-300 text-emerald-900 font-bold"; // В точку!
             } else if (score > 65) {
                 row.className += "bg-orange-100 border-orange-300 text-orange-900"; // Очень тепло
-                    smile = "🔥";
+                smile = "🔥";
+                state = 'very_hot';
             } else if (score > 45) {
                 row.className += "bg-yellow-50 border-yellow-200 text-yellow-900"; // Тепло
-                    smile = "😊";
+                smile = "😊";
+                state = 'hot';
             } else if (score > 39) {
                 row.className += "bg-slate-100 border-slate-200 text-slate-600"; // Холодно
-                    smile = "🥶";
+                smile = "🥶";
+                state = 'warm';
             } else {
                 row.className += "bg-blue-100 border-blue-200 text-blue-600"; // Совсем Холодно
-                    smile = "❄️";
+                smile = "❄️";
+            }
+            if (((attempts % 4) == 0) || (state == 'win')) {
+                typeMessage(getRandomPhrase(state));
             }
             row.innerHTML = `<span class="font-medium pl-1 pr-1">${word}</span> <span class="text-sm font-mono bg-white/60 px-2 py-0.5 rounded-md border border-black/5 attempts-span">${score}{{similarity}}  ${smile}</span>`;
 
@@ -487,7 +532,7 @@
 
 
         // SWITCH ON THE RADAR device
-        function show_radar(olready_checked) {
+        async function show_radar(olready_checked) {
             if ((olready_checked) || (document.getElementById('show_radar').checked)) {
                 // Очищаем радар
                 document.getElementById('radar').innerHTML = `<div class="absolute inset-0 animate-spin" style="animation-duration: 4s;"><div class="w-1/2 h-full bg-gradient-to-r from-emerald-600/40 to-transparent origin-right transform rotate-90"></div></div>
@@ -503,6 +548,11 @@
                 }, 10);  
                 
                 guesses.forEach(data => { addWordToRadar(data.word, data.similarity); });
+
+                if (!have_replics) {
+                    await fill_replics(); 
+                    typeMessage(getRandomPhrase('start'));
+                }
             }
         }
 
@@ -759,7 +809,7 @@
             toast.classList.add("show");
             // Убираем старый таймер, если он был
             clearTimeout(toastTimeout);
-            // Скрываем автоматически через 6 секунды
+            // Скрываем автоматически через 5 секунд
             toastTimeout = setTimeout(() => { hideToast(id); }, 5000);
         }
 
@@ -770,6 +820,45 @@
                 setTimeout(() => toast.classList.add("hidden"), 500); 
             }
         }   
+
+        // Функция для вывода текста по одному символу
+        function typeMessage(text, speed = 40) {
+            let i = 0;
+            clearTimeout(messTimeout);
+            messageElement.innerHTML = ''; 
+
+            function typeSim() {
+                if (i < text.length) {
+                    messageElement.innerHTML += text.charAt(i);
+                    i++;
+                }
+                
+                messTimeout = setTimeout(typeSim, speed);
+            }
+            typeSim();
+        } 
+        
+        async function fill_replics() {
+            try {
+                let lang = language.replace('en', 'gb');
+                const response = await fetch(`/static/replics_${lang}.json`, { method: 'GET',  credentials: 'include' });
+                const data = await response.json();
+                if (data) {
+                    Object.assign(replics, data)
+                    have_replics = true;
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+            }
+        }
+
+        function getRandomPhrase(status) {
+                const category = replics[status];
+                console.log(replics);
+                const randomIndex = Math.floor(Math.random() * category.length);
+                console.log(category[randomIndex]);
+                return category[randomIndex];
+        }
 
 
         if (window.innerWidth < 768) {
