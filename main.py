@@ -17,6 +17,8 @@ from sqlalchemy import text
 from fastapi import Cookie, FastAPI, Form, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from openai import AsyncOpenAI
+from rapidfuzz import fuzz
+from collections import Counter
 
 from config import BASE_DIR, ERROR_MESSAGES_EN, ERROR_MESSAGES_RU, MODEL_PATH, settings, logger
 from database import SessionDep, check_the_game_duration, check_the_player_involved, check_user, create_new_game, engine, create_all_tables, db_connection_check, fill_hints_cache, manage_hint, get_players_stats, get_the_game_statistic, user_exists, the_game_state_update, new_session
@@ -38,7 +40,8 @@ async def lifespan(app: FastAPI):
     await create_all_tables()
 
     app.state.process_lock = asyncio.Lock()
-    app.state.stored_hint = HintCache(result="NO", word="", first_letter="", second_letter="", last_letter="", analogues=[], ai="", anagram="", gameid=0, size=0)     
+    app.state.stored_hint = HintCache(result="NO", word="", first_letter="", second_letter="", last_letter="", analogues=[], ai="", anagram="", gameid=0, size=0)    
+    app.state.language = settings.language 
 
     logger.info("Загрузка ML моделей...")
     app.state.embedder = TextEmbedding(
@@ -230,9 +233,23 @@ async def make_guess(
                 raise HTTPException(status_code=404, detail=f"Secret word {game_data.secret_word} was not found.")
 
             similarity_percent = max(0.0, min(100.0, (1.0 - cos_distance) * 100.0))
+
+            if request.app.state.language == 'ru' and guessing_lang == 'ru' and similarity_percent > 70: 
+                common_counter = Counter(payload.word) & Counter(game_data.secret_word)
+                total_common = sum(common_counter.values())
+                avg_len = (len(payload.word) + len(game_data.secret_word)) / 2
+                pct_counter = (total_common / avg_len) * 100
+                logger.info(f"pct_counter = {pct_counter}")
+                
+                if pct_counter > 66.0:
+                    pct_fuzz:float = fuzz.ratio(payload.word, game_data.secret_word)
+                    logger.info(f"pct_fuzz = {pct_fuzz}")
+                    if pct_fuzz < similarity_percent:
+                        similarity_percent = pct_fuzz
+
             success_treshold: float = SUCCESS_THRESHOLD_PERCENT
             if guessing_lang == game_data.language: 
-                success_treshold = 98.0
+                success_treshold = 98.0 
 
             is_correct = similarity_percent >= success_treshold
             if is_correct:
@@ -309,7 +326,7 @@ async def join_the_game(request: Request, session: SessionDep, current_user: Use
             return {"status": "waiting", "game_id": 0, "message": get_err_message("game_beginning", "he new game is about to start...", current_user.lang) }
 
         if request.app.state.stored_hint.result == "NO" or request.app.state.stored_hint.gameid != game_stats.game_id:
-            await fill_hints_cache(game_stats.game_id, game_stats.secret_word, game_stats.language, session, request.app.state)
+            await fill_hints_cache(game_stats.game_id, game_stats.secret_word, session, request.app.state)
 
         return {
             "status": "active",

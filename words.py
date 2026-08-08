@@ -60,7 +60,8 @@ def create_word_prompt(single_word: str, detected_lang: str) -> str:
 
 
 def generate_embedding(single_word: str, language: str, embedder: TextEmbedding) -> np.ndarray:
-    prompt = create_word_prompt(single_word, language)      
+    prompt = create_word_prompt(single_word, language)   
+    logger.info(f"Создан промпт для языка {language} : '{prompt}'")   
     emb = next(iter(embedder.embed([prompt])))  
     
     try:

@@ -250,6 +250,7 @@ async def the_game_state_update(userid: int, game_id: int, player_id: int, word:
 
 async def create_new_game(session_factory: async_sessionmaker, app_state, force: bool) -> bool:
     language: str = settings.language
+    app_state.language = language
     game_lock = app_state.process_lock
     new_game_id:int|None = None
     async with game_lock:       
@@ -435,13 +436,16 @@ def get_hints_from_cache(request, level: int) -> HintResponse:
 
 
 
-async def fill_hints_cache(gameid: int, word: str, language: str, session: SessionDep, app_state):
+async def fill_hints_cache(gameid: int, word: str, session: SessionDep, app_state):
+    language = app_state.language
     hint_cache: HintCache = app_state.stored_hint
     hint_cache.gameid = gameid
     hint_cache.word = word
     hint_cache.first_letter = word[0].upper() 
     hint_cache.last_letter = word[-1].upper() 
     hint_cache.second_letter = word[1].upper()
+    hint_cache.analogues = []
+    hint_cache.ai = ""
     hint_cache.anagram = "".join(sorted(word))
     hint_cache.size = len(word)
     hint_cache.result = "YES"
@@ -493,7 +497,7 @@ async def create_ai_description(word: str, language: str, app_state) -> str:
             {"role": "user", "content": prompt}
         ]
     )
-    logger.warning("обращение к АПИ модели GLM-5.2 !!!")
+    logger.warning(f"обращение к АПИ модели GLM-5.2 !!!  Язык: {language}")
     content = response.choices[0].message.content
     # logger.info(response.choices)
     if content is None:

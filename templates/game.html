@@ -111,7 +111,7 @@
                 <!-- Шапка панели в стиле LCARS, повторяющая цвета вашего радара -->
                 <div class="panel-header">
                     <div class="panel-bar deep-blue"></div>
-                    <div class="panel-indicator">SPACE SCANNER - USS Enterprise NX-01</div>
+                    <div class="panel-indicator">USS Enterprise NX-01</div>
                     <div class="panel-bar deep-blue"></div>
                 </div>
 
@@ -535,6 +535,7 @@
         async function show_radar(olready_checked) {
             if ((olready_checked) || (document.getElementById('show_radar').checked)) {
                 // Очищаем радар
+                messageElement.innerHTML = '';
                 document.getElementById('radar').innerHTML = `<div class="absolute inset-0 animate-spin" style="animation-duration: 4s;"><div class="w-1/2 h-full bg-gradient-to-r from-emerald-600/40 to-transparent origin-right transform rotate-90"></div></div>
                     <div class="radar-line-1 radar-lines"><div class="radar-line-2 radar-lines"><div class="radar-line-3 radar-lines"><div class="radar-line-4 radar-lines">
                     <div class="animate-pulse radar-center"> </div>
@@ -551,8 +552,8 @@
 
                 if (!have_replics) {
                     await fill_replics(); 
-                    typeMessage(getRandomPhrase('start'));
                 }
+                typeMessage(getRandomPhrase('start'));
             }
         }
 
@@ -641,7 +642,7 @@
 
 
             if (document.getElementById('show_radar').checked) {
-                setTimeout(() => { hideRadar(); }, 5000);
+                setTimeout(() => { hideRadar(); }, 8000);
             }    
 
             if (isVictory) {
