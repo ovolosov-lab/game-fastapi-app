@@ -414,6 +414,7 @@ b {color: rgb(21, 93, 252); }
 
   /* Стилизация текста сообщения */
   #radar-message {
+    font-family: 'Share Tech Mono', monospace;
     color: #0df0d1;
     font-size: 15px;
     line-height: 1.4;
