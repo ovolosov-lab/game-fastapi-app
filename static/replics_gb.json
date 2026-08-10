@@ -44,5 +44,8 @@
     "Contact established, Captain! The crew celebrates victory. You are a navigational genius!", 
     "The universal translator is ready to go. Congratulations, Captain, First Contact has officially taken place!",
     "Decryption successful, Captain! Mission accomplished!"
-  ]
+  ],
+  "help1": "The word begins with the letter '{hint}'!",
+  "help2": "The last letter of the word is '{hint}'!",
+  "help3": "The second letter of the word is '{hint}'!"
 }

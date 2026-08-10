@@ -1,48 +1,51 @@
 {
   "start": [
-    "Attention! Captain on the bridge!",
-    "Our mission: Boldly go where no man has gone before! Warp drives at maximum!", 
-    "These are the voyages of the starship Enterprise. Its continuing mission: to explore strange new worlds and words, to seek out new life and new civilizations...",
-    "Computer, begin simulation. First Contact Protocol activated. Send our first word!",
-    "Full speed ahead! Fasten your seatbelts, we're about to jump!",
-    "Computer, run the simulation. It's time to boldly go where no man has gone before. Ready!",
-    "We're engaging warp engines. The main thing is to not panic and keep your towel ready!", 
-    "Attention, crew! Encrypted transmission from an unknown civilization detected!",
-    "The onboard linguistic processor is ready to decipher a message from an unknown civilization. Enter the first word for calibration!"
-  ],  
+    "Attention ! Capitaine sur le pont !",
+    "Notre mission : aller là où personne n'est allé auparavant ! Moteurs à distorsion à fond !",
+    "Voici les voyages du vaisseau spatial Enterprise. Sa mission permanente : explorer d'étranges nouveaux mondes et mots, chercher de nouvelles vies et de nouvelles civilisations...",
+    "Ordinateur, lance la simulation. Protocole Premier Contact activé. Envoie notre premier mot !",
+    "Pleine vitesse ! Attachez vos ceintures, nous sommes sur le point de sauter !",
+    "Ordinateur, exécute la simulation. Il est temps d'aller audacieusement là où personne n'est allé auparavant. Prêt !",
+    "Nous engageons les moteurs de distorsion. L'essentiel est de ne pas paniquer et de garder votre serviette prête !",
+    "Attention, équipage ! Transmission cryptée d'une civilisation inconnue détectée !",
+    "Le processeur linguistique embarqué est prêt à déchiffrer un message d'une civilisation inconnue. Entrez le premier mot pour l'étalonnage !"
+  ],
   "cold": [
-    "The sensors are silent, Captain. This sector of space is absolute zero.",
-    "The sensors are silent, Captain. Radar is detecting only cosmic noise in this sector. We need to change the search vector.",
-    "Captain, we're flying into the deep void. The onboard computer recommends a turn.",
-    "They still don't understand us and we're losing contact with them! Try sending just one word!", 
-    "We're at the very edge of the galaxy, sir! We need to jump in the opposite direction!"
+    "Les capteurs sont silencieux, Capitaine. Ce secteur de l'espace est à zéro absolu.",
+    "Les capteurs sont silencieux, Capitaine. Le radar ne détecte que du bruit cosmique dans ce secteur. Nous devons changer le vecteur de recherche.",
+    "Capitaine, nous nous aventurons dans le vide profond. L'ordinateur de bord recommande un virage.",
+    "Ils ne nous comprennent toujours pas et nous perdons le contact ! Essayez d'envoyer juste un mot !",
+    "Nous sommes aux confins de la galaxie, monsieur ! Nous devons sauter dans la direction opposée !"
   ],
   "warm": [
-    "Caught a weak impulse! The energy of similarity is growing.",
-    "The sensors have detected a residual trace. We are crossing the desired meridian.",
-    "We have a weak contact, sir! The object is somewhere in this quadrant!",
-    "The anomaly is responding to our words. Keep up the good work!",
-    "Radar picked up a weak gravitational wave! We've found the right quadrant, but the meaning of their messages is still unclear."
+    "Une faible impulsion a été captée ! L'énergie de similarité augmente.",
+    "Les capteurs ont détecté une trace résiduelle. Nous franchissons le méridien souhaité.",
+    "Nous avons un contact faible, monsieur ! L'objet se trouve quelque part dans ce quadrant !",
+    "L'anomalie répond à nos mots. Continuez le bon travail !",
+    "Le radar a repéré une faible onde gravitationnelle ! Nous avons trouvé le bon quadrant, mais le sens de leurs messages reste flou."
   ],
   "hot": [
-    "The signal is becoming stable, Captain! We're definitely on the right track, but the target star system hasn't been identified yet.",
-    "We have a stable frequency lock! The onboard computer confirms the heading, continue scanning the sector.",
-    "The radar indicators came to life. Telemetry is strong, sir, but we need a little more data before we can narrow down the search area.",
-    "We're definitely on to something! The main thing is to keep up the pace; our destination is close!"
+    "Le signal devient stable, Capitaine ! Nous sommes définitivement sur la bonne voie, mais le système stellaire cible n'a pas encore été identifié.",
+    "Nous avons un verrouillage de fréquence stable ! L'ordinateur de bord confirme le cap, continuez à scanner le secteur.",
+    "Les indicateurs radar se sont activés. La télémétrie est forte, monsieur, mais nous avons besoin de quelques données supplémentaires avant de pouvoir affiner la zone de recherche.",
+    "Nous sommes définitivement sur quelque chose ! L'essentiel est de garder le rythme ; notre destination est proche !"
   ],
   "very_hot": [
-    "We're on course, Captain! A little more precision and we'll make contact!",
-    "Momentum is at its peak! We're literally on the threshold of scientific discovery!",
-    "Instrument readings are off the charts, Captain! Target is dead ahead – adjust your last jump data!",
-    "The vector is perfect! One more precise jump and we're there!",
-    "The station's magnetic field has captured our ship. We're very close!",
-    "The decryption is almost complete, sir! The universal translator is close to compiling a complete alien dictionary!"
+    "Nous sommes en route, Capitaine ! Un peu plus de précision et nous établirons le contact !",
+    "L'élan est à son apogée ! Nous sommes littéralement sur le seuil de la découverte scientifique !",
+    "Les relevés d'instruments sont hors normes, Capitaine ! La cible est en plein dans le viseur – ajustez vos dernières données de saut !",
+    "Le vecteur est parfait ! Encore un saut précis et nous y serons !",
+    "Le champ magnétique de la station a capturé notre vaisseau. Nous sommes très proches !",
+    "Le décryptage est presque terminé, monsieur ! Le traducteur universel est sur le point de compiler un dictionnaire alien complet !"
   ],
   "win": [
-    "Victory, Captain! The aliens are inviting us to visit them! We're docking.",
-    "Target identified! You've solved this cosmic mystery. We're going hyperspeed!",
-    "Contact established, Captain! The crew celebrates victory. You are a navigational genius!", 
-    "The universal translator is ready to go. Congratulations, Captain, First Contact has officially taken place!",
-    "Decryption successful, Captain! Mission accomplished!"
-  ]
+    "Victoire, Capitaine ! Les extraterrestres nous invitent à les visiter ! Nous amarrons.",
+    "Cible identifiée ! Vous avez résolu ce mystère cosmique. Nous passons en hypervitesse !",
+    "Contact établi, Capitaine ! L'équipage célèbre la victoire. Vous êtes un génie de la navigation !",
+    "Le traducteur universel est prêt. Félicitations, Capitaine, le Premier Contact a officiellement eu lieu !",
+    "Décryptage réussi, Capitaine ! Mission accomplie !"
+  ],
+  "help1":     "Le mot commence par la lettre '{hint}' !",
+  "help2":     "La dernière lettre du mot est '{hint}' !",
+  "help3":     "La deuxième lettre du mot est '{hint}' !"
 }

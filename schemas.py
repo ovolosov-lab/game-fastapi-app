@@ -68,7 +68,8 @@ class GuessResponse(BaseModel):
     word:str = Field(..., description="Загаданное слово")
     similarity: float = Field(..., description="Процент сходства (0.0 - 100.0)")
     is_correct: bool = Field(..., description="Угадано ли слово на 100%")
-    attempts: int = Field(..., description="Текущее количество попыток игрока")    
+    attempts: int = Field(..., description="Текущее количество попыток игрока")   
+    reason: str = Field(..., description="Причина отказа")  
 
 class GameStartResponse(BaseModel):
     message: str = Field(..., description="Статус начала игры")

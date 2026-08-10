@@ -21,7 +21,7 @@ from rapidfuzz import fuzz
 from collections import Counter
 
 from config import BASE_DIR, ERROR_MESSAGES_EN, ERROR_MESSAGES_RU, MODEL_PATH, settings, logger
-from database import SessionDep, check_the_game_duration, check_the_player_involved, check_user, create_new_game, engine, create_all_tables, db_connection_check, fill_hints_cache, manage_hint, get_players_stats, get_the_game_statistic, user_exists, the_game_state_update, new_session
+from database import SessionDep, check_the_game_duration, check_the_player_involved, check_user, create_new_game, engine, create_all_tables, db_connection_check, fill_hints_cache, join_the_player, manage_hint, get_players_stats, get_the_game_statistic, user_exists, the_game_state_update, new_session
 from schemas import GuessRequest, GuessResponse, HintCache, NewUser, User, UserInfo, WordsDataInfo
 from services import AsyncPeriodicTask, create_new_user, get_err_message, load_internationalization_data
 from tokens import create_access_token, get_current_user
@@ -157,7 +157,7 @@ async def add_user(new_user: Annotated[NewUser, Form()], session: SessionDep) ->
 @app.get("/game/home/", tags=["Game", "home page"], summary="Welcome to the Game home page")
 async def home_page(session: SessionDep, request: Request, current_user: UserInfo = Depends(get_current_user)):
     i18n_data: dict = load_internationalization_data(current_user.lang)
-    player_data: dict = await check_the_player_involved(current_user.userid, 0, current_user.lang, False, session)
+    player_data: dict = await check_the_player_involved(current_user.userid, 0, current_user.lang, session)
     data = {"username": current_user.username, "joined_the_game": "True" if player_data["result"] == True else "False", "language": current_user.lang.replace("en","gb")}
     return templates.TemplateResponse(request, "game.html", {"request": request, **data, **i18n_data})
 
@@ -186,19 +186,19 @@ async def make_guess(
     current_user: UserInfo = Depends(get_current_user) 
 ):
     if payload.gameid == 0:
-        return GuessResponse(status = "CLOSED", word = "", similarity = 0, is_correct = False, attempts = 0)
+        return GuessResponse(status = "CLOSED", word = "", similarity = 0, is_correct = False, attempts = 0, reason = "WRONG game_id")
        
     similarity_percent:float = 0.0
     is_correct:bool = False
     attempts:int = 0
 
-    player_data:dict = await check_the_player_involved(current_user.userid, payload.gameid, current_user.lang, False, session)
+    player_data:dict = await check_the_player_involved(current_user.userid, payload.gameid, current_user.lang, session)
     if player_data["result"]:
         # Кодируем guessed word игрока
         guessing_lang: str = detect_language(payload.word)
         user_embedd_vec = generate_embedding(payload.word, guessing_lang, request.app.state.embedder)  
 
-        # Получаем ИД игрока, кол-во попыток. Считаем расстояние в БД и переводим в проценты схожести
+        # Получаем секретное слово и эмбеддинги.
         sql_query = text("""
             SELECT g.id AS game_id, w.embedding, w.word as secret_word, w.language
             FROM games g JOIN words w ON w.id = g.secret_word_id
@@ -208,8 +208,9 @@ async def make_guess(
         result = await session.execute(sql_query, {"gameid": payload.gameid}) 
         game_data = result.fetchone()
         if not game_data:
-            return GuessResponse(status = "CLOSED", word = "", similarity = 0, is_correct = False, attempts = 0)
+            return GuessResponse(status = "CLOSED", word = "", similarity = 0, is_correct = False, attempts = 0, reason = "GAME_CLOSED")
 
+        # Считаем расстояние между векторами и переводим в проценты схожести
         if (game_data.secret_word == payload.word):
             similarity_percent = 100.0
             is_correct = True
@@ -256,13 +257,13 @@ async def make_guess(
                 similarity_percent = 100
 
         # Обновляем состояние игры
-        await the_game_state_update(current_user.userid, game_data.game_id, player_data["player_id"], payload.word, game_data.secret_word, similarity_percent, request.app.state, session)
+        await the_game_state_update(current_user.userid, game_data.game_id, player_data["player_id"], payload.word, game_data.secret_word, similarity_percent, session)
 
         attempts = player_data["attempts"] + 1
 
-        return GuessResponse(status = "OK", word = payload.word, similarity = round(similarity_percent, 0), is_correct = is_correct, attempts = attempts)
+        return GuessResponse(status = "OK", word = payload.word, similarity = round(similarity_percent, 0), is_correct = is_correct, attempts = attempts, reason = "")
     else:
-        return GuessResponse(status = "CLOSED", word = "", similarity = 0, is_correct = False, attempts = 0)
+        return GuessResponse(status = "CLOSED", word = "", similarity = 0, is_correct = False, attempts = 0, reason = player_data["reason"])
 
 
 @app.get("/game/stats/", tags=["Game", "game session", "stats"], summary="Data for the current game statistic")
@@ -311,19 +312,19 @@ async def get_game_status(session: SessionDep, current_user: UserInfo = Depends(
 
 @app.post("/game/join/", tags=["Game", "game session", "join"], summary="Join the game")
 async def join_the_game(request: Request, session: SessionDep, current_user: UserInfo = Depends(get_current_user)):
-    player_data:dict = await check_the_player_involved(current_user.userid, 0, current_user.lang, True, session)
+    player_data:dict = await join_the_player(current_user.userid, current_user.lang, session)
     if player_data["result"]:
         game_stats = await get_the_game_statistic(current_user.userid, session)
         
         if not game_stats:
-            return {"status": "waiting", "message": get_err_message("game_beginning", "he new game is about to start...", current_user.lang)}
+            return {"status": "waiting", "message": get_err_message("game_beginning", "New game is about to start...", current_user.lang)}
         
         remaining_time = settings.game_duration - game_stats.seconds_passed 
             
         logger.info(f"{settings.game_duration} remaining game time (sec) = {remaining_time}")
 
         if remaining_time < 11: 
-            return {"status": "waiting", "game_id": 0, "message": get_err_message("game_beginning", "he new game is about to start...", current_user.lang) }
+            return {"status": "waiting", "game_id": 0, "message": get_err_message("game_beginning", "New game is about to start...", current_user.lang) }
 
         if request.app.state.stored_hint.result == "NO" or request.app.state.stored_hint.gameid != game_stats.game_id:
             await fill_hints_cache(game_stats.game_id, game_stats.secret_word, session, request.app.state)
@@ -339,7 +340,7 @@ async def join_the_game(request: Request, session: SessionDep, current_user: Use
             "language": game_stats.language
         } 
     else:
-        return {"status": "waiting", "message": get_err_message("game_beginning", "he new game is about to start...", current_user.lang)}
+        return {"status": "waiting", "message": get_err_message("game_beginning", "he new game is about to start...", current_user.lang), "reason": player_data["reason"]}
 
 
 

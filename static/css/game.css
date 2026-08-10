@@ -23,7 +23,7 @@
 #start-btn { margin-bottom: 15px; cursor:pointer; }
 #timer-container { padding-left: 8px; }
 #timer-block { padding-left: 5px; }
-#history-list {  height: calc(100vh - 440px);   border: 1px solid rgb(240, 244, 250); border-radius: 7px; }
+#history-list {  height: calc(100vh - 380px);   border: 1px solid rgb(240, 244, 250); border-radius: 7px; }
 
 #stats-grid ul li { font-size:0.8rem; }
 #stats-grid ul li b { font-size:1.0rem; }
@@ -48,22 +48,26 @@
 }
 
 @media (max-width: 1490px) {
-    .radar-container {  transform-origin: top 20%; transform: scale(0.8);  }
-}
-
-@media (max-width: 1430px) {
-    .radar-container {  transform-origin: top left; transform: scale(0.75);  }
-    #radar-block {
-        padding-left: 5%;
+    #game-container { 
+        display: flex;
+        flex-direction: row;
+        align-items: flex-end;
+        height: 100%;
     }
-}
-
-@media (max-width: 1250px) {
-    #radar-block {
-        display: none;
+    #welcome-card {
+        max-width: 700px;
+        max-width: 700px;
     }
-    #show-radar-div {
-        display: none;
+    .center-block {
+        max-width: 600px;
+        min-width: 600px;
+        margin-left:auto;
+        margin-right: auto;
+    }
+    .star-trek-panel {
+        min-width: 490px;
+        max-width: 490px;
+        overflow: hidden;
     }
 }
 

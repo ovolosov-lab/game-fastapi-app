@@ -141,53 +141,84 @@ async def find_the_running_game(session: AsyncSession) -> dict:
         return {"id": 0, "game_time": 0}  
     
 
-async def check_the_player_involved(userid: int, gameid: int, language: str, force: bool, session: SessionDep) -> dict:
+async def check_the_player_involved(userid: int, gameid: int, language: str, session: SessionDep) -> dict:
     """Ensure a player record exists for the given userid in the current running game.
-    Returns True if the user already has a player record for the running game or was added successfully.
-    Returns False if there is no running game or if an error occurred while adding (error is logged).
+    Returns True if the user already has a player record for the running game.
+    Returns False if there is no running game (the game has been just cosed / another user won the game)).
     """
+    if gameid == 0:
+        logger.info(f"This player (userid={userid}) is NOT involved!  GAME ID == 0")
+        return {"result": False, "reason": "game_id == 0"}
+
     player_id:int = 0
-    game_checked:bool = False
-    game_id = gameid
+    # Check if the player already exists for this game (and the game has not been finished yet)
+    sql = text("""
+        SELECT p.id, p.finished, p.attempts, p.hints, g.finished AS game_finished, 
+        EXISTS(SELECT 1 FROM players pp WHERE pp.gameid = :gameid1 AND pp.finished IS NOT NULL AND pp.id <> p.id) AS another_won 
+        FROM players p INNER JOIN games g ON g.id=p.gameid 
+        WHERE p.userid = :userid AND p.gameid = :gameid2 LIMIT 1
+    """)
+    res = await session.execute(sql, {"gameid1": gameid, "userid": userid, "gameid2": gameid})
+    row = res.first()
+    if row:
+        if row.another_won:
+            logger.warning(f"UNABLE GUESS the word for the game {gameid}! Another player won the game")
+            return {"result": False, "reason": "ANOTHER_PLAYER_WON"}
+        else:
+            if row.finished or row.game_finished:
+                logger.warning(f"UNABLE GUESS the word for the FINISHED game {gameid}!")
+                return {"result": False, "reason": "GAME_FINISHED"}
+            else:
+                return {"result": True, "player_id": row.id, "attempts": row.attempts, "hints": row.hints}
+    else:
+        logger.error(f" UNABLE GUESS the word: User {userid} is NOT involved into the game {gameid} ")
+        return {"result": False, "reason": "GAME_NOT_FOUND / PLAYER_NOT_JOINED"}
+
+
+async def join_the_player(userid: int, language: str, session: SessionDep) -> dict:
+    player_id:int = 0
+    game_id:int = 0
+    time_left:int = settings.game_duration
     try:
+        game_dict = await find_the_running_game(session)
+        game_id = game_dict["id"] 
         if game_id == 0:
-            game_dict = await find_the_running_game(session)
-            if game_dict["id"] == 0:
-                logger.error(f"No running game found when trying to involve user {userid} in a game")
-                return {"result": False}
-            else:
-                if (settings.game_duration - game_dict["game_time"]) < 11:
-                    logger.error(f"Current game is about to exceed its time. Cannot join {userid} to this game")
-                    return {"result": False}
+            logger.error(f"No running game found when trying to involve user {userid} in a game")
+            return {"result": False, "reason": "GAME_NOT_FOUND"}
+        else:
+            time_left = settings.game_duration - game_dict["game_time"]
+            if time_left < 11:
+                logger.warning(f"Current game is about to exceed its time. Cannot join {userid} to this game")
+                return {"result": False, "reason": "GAME_ABOUT_TO_EXCEED"}
+
+        sql = text("""
+            SELECT p.id, p.finished, p.hints, p.attempts, 
+            EXISTS(SELECT 1 FROM players pp WHERE pp.gameid = :gameid1 AND pp.finished IS NOT NULL AND pp.id <> p.id) AS another_won 
+            FROM players p WHERE p.userid = :userid AND p.gameid = :gameid2 LIMIT 1
+        """)
+        res = await session.execute(sql, {"gameid1": game_id, "userid": userid, "gameid2": game_id})
+        row = res.first()
+        if row:
+            if not row.finished:
+                if not row.another_won:
+                    return {"result": True, "player_id": row.id, "time_left": time_left, "attempts": row.attempts, "hints": row.hints}
                 else:
-                    game_id = game_dict["id"]
-                    game_checked = True
-
-        if game_id > 0:
-            # Check if the player already exists for this game
-            sql = text("""
-                SELECT p.id, p.attempts 
-                FROM players p INNER JOIN games g ON g.id=p.gameid 
-                WHERE userid = :userid AND gameid = :gameid AND g.finished IS NULL AND p.finished IS NULL LIMIT 1
-            """)
-            res = await session.execute(sql, {"userid": userid, "gameid": game_id})
-            row = res.first()
-            if row:
-                return {"result": True, "player_id": row.id, "attempts": row.attempts}
+                    logger.warning(f"Unable to join the game {game_id}! Another player won the game")
+                    return {"result": False, "reason": "ANOTHER_PLAYER_WON"}
             else:
-                logger.info(f"Данный пользователь {userid} еще не привязан к игре {game_id}")
-
-        if force and game_id > 0 and game_checked:
-            cnt: int = 0
+                logger.error(f"Unable to join the FINISHED game {game_id}!")
+                return {"result": False, "reason": "GAME_FINISHED"}
+        else:
+            logger.info(f"User {userid} is NOT joined to game {game_id} - START joining!")
+            #  Only HE FIRST player joined the game can define the next game language (next secret word language) 
             sql = text("SELECT count(*) AS cnt FROM players WHERE gameid = :gameid")
             result = await session.execute(sql, {"gameid": game_id})
             row = result.first()
             if row:
-                cnt = row.cnt
-            if cnt == 0:
-                settings.language = language
+                if row.cnt == 0:
+                    settings.language = language  # language in settings define the secret word language
 
-            # Try to insert new player record
+            # Try to insert new player record (to involve user in the game)
             try:
                 sql = text("INSERT INTO players (userid, gameid, attempts, hints) VALUES (:userid, :gameid, 0, 0) RETURNING id")
                 res = await session.execute(sql, {"userid": userid, "gameid": game_id})
@@ -196,23 +227,21 @@ async def check_the_player_involved(userid: int, gameid: int, language: str, for
                 if row:
                     player_id = row.id
                     logger.success(f"User {userid} was added as a player to game {game_id}")
-                    return {"result": True, "player_id": player_id, "attempts": 0}
+                    return {"result": True, "player_id": player_id, "time_left": time_left, "attempts": 0, "honts": 0}
                 else:
-                    return {"result": False}  
+                    logger.error(f"AN ANEXPECTED ERROR occured when trying to involve user {userid} in a game {game_id}")
+                    return {"result": False, "reason": "ERROR"}  
             except IntegrityError as e:
                 await session.rollback()
                 logger.info(f"Попытка userid={userid} подключиться в игру {game_id} второй раз !")
                 return {"result": False}    
-        else:
-            logger.info(f"Условия вызова функции запрещают создать игру !")
-            return {"result": False}
     except Exception as e:
         await session.rollback()
-        logger.error(f"Failed to add user {userid} to the running game: {e}")
+        logger.error(f"FAILED to add user {userid} to the running game: {e}")
         raise HTTPException(status_code=500, detail="Internal error while adding player to the game")
-    
 
-async def the_game_state_update(userid: int, game_id: int, player_id: int, word: str, secret_word:str, similarity_percent: float, app_state, session: SessionDep) -> bool:
+
+async def the_game_state_update(userid: int, game_id: int, player_id: int, word: str, secret_word:str, similarity_percent: float, session: SessionDep) -> bool:
     enddate:datetime|None = None
     try:
         # Если игрок угадал слово - он победитель и игра завершена!
@@ -229,11 +258,10 @@ async def the_game_state_update(userid: int, game_id: int, player_id: int, word:
         # записываем результаты очередного хода игрока
         logger.info(f"Записываются в БД результаты очередного хода игрока {userid} в игре {game_id}, он ввел слово {word} для слова {secret_word}. similarity = {similarity_percent}")
         if enddate:
-            sql_query = text("UPDATE players SET attempts=attempts+1, finished=:enddate WHERE id=:player_id")
-            await session.execute(sql_query, {"enddate": enddate, "player_id": player_id})
+            sql_query = text("UPDATE players SET attempts=attempts+1, finished=LOCALTIMESTAMP WHERE id=:player_id")
         else:    
             sql_query = text("UPDATE players SET attempts=attempts+1 WHERE id=:player_id")
-            await session.execute(sql_query, {"player_id": player_id})
+        await session.execute(sql_query, {"player_id": player_id})
 
         if similarity_percent <= 99.0:
             sql_query = text("INSERT INTO sessions(playerid, word, similarity_score) SELECT :playerid, :word, :similarity_score")

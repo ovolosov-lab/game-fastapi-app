@@ -20,12 +20,12 @@
     </header>
 
     <!-- Основной контент -->
-    <main class="game-grid-container h-[calc(100vh-114px)] overflow-y-auto">
+    <main id="game-container" class="game-grid-container h-[calc(100vh-114px)] overflow-y-auto">
         
         <!-- WELCOME BLOCK (Экран старта и статистики) -->
         <div id="welcome-card" class="center-block bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
             <p class="text-sm text-slate-500 mb-4">{{program_description}}</p>            
-            <button id="start-btn" class="w-full bg-blue-600 text-white font-medium py-3 rounded-xl hover:bg-blue-700 transition shadow-sm">
+            <button id="start-btn" class="w-full bg-blue-600 text-white font-medium py-3 rounded-xl hover:bg-deep-space transition shadow-sm">
                 {{start}}
             </button>
             <h2 class="text-lg font-semibold mb-3 text-blue-600">{{game_stats}}</h2>
@@ -57,10 +57,10 @@
                     <p class="text-xs text-slate-400 mt-1">{{new_announced}}</p>
                 </div>
                 <div class="flex flex-col justify-between space-y-[10px]">
-                    <button id="start-again-btn" class="w-full py-3 bg-blue-600 text-white font-medium py-3 rounded-xl hover:bg-blue-700 transition shadow-sm">
+                    <button id="start-again-btn" class="w-full py-3 bg-blue-600 text-white font-medium py-3 rounded-xl hover:bg-deep-space transition shadow-sm">
                         {{play_again}}
                     </button>
-                    <button id="quit-btn" class="px-3 bg-blue-600 text-white font-medium py-3 rounded-xl hover:bg-blue-700 transition shadow-sm">
+                    <button id="quit-btn" class="px-3 bg-blue-600 text-white font-medium py-3 rounded-xl hover:bg-deep-space transition shadow-sm">
                         {{view_stats}}
                     </button>
                 </div>
@@ -340,7 +340,7 @@
             submitBtn.style.opacity = '0.5'; 
 
             try {
-                console.log("Отгадываем слово:  POST-Запрос к серверу /game/guess/")
+                console.log("Отгадываем слово:  POST-Запрос к серверу /game/guess/        game_id="+currentGameId);
                 const response = await fetch('/game/guess/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -354,9 +354,15 @@
                 const data = await response.json();
 
                 if (data.status == "CLOSED") {
-                    console.log(`Текущая игра ${currentGameId} оказалась уже завершенной!`)
+                    console.log(`The running game appeared to be ${currentGameId} closed!  ${data.reason}`)
                     guesses.length = 0;
-                    endGame(false, "{{another_winner}}")
+                    Object.assign(replics, {});
+
+                    if (data.reason == "ANOTHER_PLAYER_WON") {
+                        endGame(false, "{{another_winner}}")
+                    } else {
+                        endGame(false, "{{sorry_finished}}")
+                    }    
                 } else {    
                     if (data.word) {
                         guesses.push(data);
@@ -392,9 +398,8 @@
                             }
 
                         }
-                        if ((attempts % 3) == 0) {
-                            // typeMessage("Мы на верном курсе, капитан! Еще чуть точнее, и мы найдем эту космическую станцию.");
-                        }
+
+
 
                     }    
                 }
@@ -441,10 +446,18 @@
 
                             if (data.first_letter != "") {
                                 tmp_html = `<p style='padding-bottom:10px;'>{{starts_with_hint}} <b style="color:magenta">${data.first_letter}</b><p>`;
+                                
+                                if (have_replics){
+                                    replics['cold'].push(replics['help1'].replace("{hint}", data.first_letter.toUpperCase()))        
+                                }
                             }
 
                             if (data.last_letter != "") {
                                 tmp_html += `<hr/><p style='padding:10px;'>{{ends_with_hint}} <b style="color:magenta">${data.last_letter}</b><p>`;
+                                
+                                if (have_replics){
+                                    replics['cold'].push(replics['help2'].replace("{hint}", data.last_letter.toUpperCase()))        
+                                }
                             } 
 
                             if (data.analogues.length > 0) {
@@ -457,6 +470,10 @@
 
                             if (data.second_letter != "") {
                                 tmp_html += `<hr/><p style='padding:10px;'>{{second_letter_hint}} <b style="color:magenta">${data.second_letter}</b><p>`;
+                                
+                                if (have_replics){
+                                    replics['cold'].push(replics['help3'].replace("{hint}", data.second_letter.toUpperCase()))        
+                                }
                             } 
 
                             if (data.anagram != "") {
@@ -557,7 +574,7 @@
             }
         }
 
-        // ПЛАВНОЕ ЗАКРЫТИЕ РАДАРА
+        // ЗАКРЫТИЕ РАДАРА
         function hideRadar() {
             if ((currentGameId == 0) || (!document.getElementById('show_radar').checked)) {
                 radarBlock.classList.add('opacity-0', 'scale-95');
@@ -842,23 +859,30 @@
         async function fill_replics() {
             try {
                 let lang = language.replace('en', 'gb');
+                console.log(`GET-request: /static/replics_${lang}.json`);
                 const response = await fetch(`/static/replics_${lang}.json`, { method: 'GET',  credentials: 'include' });
                 const data = await response.json();
                 if (data) {
-                    Object.assign(replics, data)
+                    Object.assign(replics, data);
                     have_replics = true;
                 }
             } catch (error) {
-                console.error('Ошибка:', error);
+                console.error('Load replics ERROR: :', error);
             }
         }
 
         function getRandomPhrase(status) {
-                const category = replics[status];
+            const category = replics[status];
+            let frase = "";
+            if (category) {
                 console.log(replics);
                 const randomIndex = Math.floor(Math.random() * category.length);
                 console.log(category[randomIndex]);
-                return category[randomIndex];
+                frase = category[randomIndex];
+            } else {
+                fill_replics();
+            }
+            return frase;
         }
 
 
@@ -866,6 +890,7 @@
             console.log('Show_radar disabled - window.innerWidth = '+window.innerWidth);
             document.querySelector('#show_radar').disabled = true;
         }
+
         // Вход сразу в блок текущей игры, если пользовавтель еще не завершил эту игру
         if (joined_the_game) {
             handleStartClick();
