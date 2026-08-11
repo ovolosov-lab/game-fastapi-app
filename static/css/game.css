@@ -30,9 +30,14 @@ body.dark-theme {
 .right-block {
   grid-column: 3; 
   overflow: hidden;
+  background-color: #ffffff;
 }
 
-body.dark-theme .center-block, .right-block {
+body.dark-theme .center-block {
+    background-color: darkgray;
+}    
+
+body.dark-theme .right-block {
     background-color: darkgray;
 }    
 
@@ -111,6 +116,10 @@ body.dark-theme #guess-form button {
         max-width: 490px;
         overflow: hidden;
     }
+    .right-block {
+        max-height: calc(100vh - 120px);
+    }
+
 }
 
 @media (max-width: 767px) {
