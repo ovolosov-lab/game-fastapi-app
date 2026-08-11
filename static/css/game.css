@@ -1,5 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
+/* Когда на body есть класс .dark-theme */
+body.dark-theme {
+  background-color: #14162b;
+  color: #fff;
+}
+
 .game-grid-container {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr; 
@@ -8,6 +14,12 @@
   padding-right:10px;
   padding-left:10px;
   overflow-x: hidden;
+}
+
+#game-footer {
+    max-height: 50px;
+    overflow: hidden;
+    padding-top: 12px;
 }
 
 .center-block {
@@ -19,6 +31,36 @@
   grid-column: 3; 
   overflow: hidden;
 }
+
+body.dark-theme .center-block, .right-block {
+    background-color: darkgray;
+}    
+
+body.dark-theme #welcome-card h2 {
+    color: #014bd4; 
+    text-shadow: white 1px 1px;
+}
+
+body.dark-theme #welcome-card p {
+    color: white;
+}
+
+body.dark-theme #game-footer {
+    background-color: #535353; 
+}
+
+body.dark-theme #game_finished_header div p {
+    color: white; 
+}
+
+body.dark-theme #guess-form input {
+    background-color: #0a0d1d;
+    color: white;
+}   
+body.dark-theme #guess-form button {
+    background-color:#014bd4; 
+    cursor: pointer;
+} 
 
 #start-btn { margin-bottom: 15px; cursor:pointer; }
 #timer-container { padding-left: 8px; }
@@ -444,3 +486,40 @@ b {color: rgb(21, 93, 252); }
     0%, 100% { opacity: 0; }
     50% { opacity: 1; }
   }
+
+  /* Стили для кнопки */
+.theme-toggle {
+  min-width: 20px;
+  min-height: 20px;
+  margin-top: 2px;
+  margin-right: 5px;
+  padding: 0;
+  border-radius: 3px;
+  border-color: #fff;
+  padding: 1px 3px 0 3px;
+  /* background: none; */
+  border: 1px solid #6c73c4;
+  cursor: pointer;
+  /* padding: 8px; */
+  color: #333;   /* Цвет иконок в светлой теме */
+}
+
+/* По умолчанию (светлая тема) скрываем солнце */
+.theme-toggle .sun {
+  display: none;
+}
+
+body.dark-theme .theme-toggle {
+  color: #ffcc00;
+  border: 1px solid #4f5df8;
+  /* Цвет иконки солнца */
+}
+
+/* Переключаем видимость */
+body.dark-theme .moon {
+  display: none;
+}
+
+body.dark-theme .sun {
+  display: block;
+}

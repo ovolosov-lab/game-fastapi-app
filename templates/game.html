@@ -10,16 +10,16 @@
 </head>
 <body class="bg-amber-50 text-slate-800 font-sans min-h-screen flex flex-col justify-between">
 
-    <!-- Шапка игры -->
+    <!-- GAME HEADER -->
     <header id="game-header" class="bg-blue-600 text-white p-4 shadow-md">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-xl font-bold tracking-wide">{{program_banner}}</h1>
             <span><span class="text-sm text-blue-600 bg-amber-50 px-3 py-1 rounded-full">{{username}}</span>
             <img src="/static/{{language}}.png" width="16" height="12" alt="{{language}}" style="display:inline; margin-left:10px;"></span>
         </div>
-    </header>
+   </header>
 
-    <!-- Основной контент -->
+    <!-- MAIN CONTENT -->
     <main id="game-container" class="game-grid-container h-[calc(100vh-114px)] overflow-y-auto">
         
         <!-- WELCOME BLOCK (Экран старта и статистики) -->
@@ -32,7 +32,7 @@
             <div id="stats-grid" class="h-[202px] border rounded-2xl p-2.5 flex flex-row justify-between mb-6 gap-6"></div>
         </div>
 
-        <!-- RUNNING GAME BLOCK (По умолчанию скрыт через class "hidden") -->
+        <!-- RUNNING GAME BLOCK ("hidden" on default) -->
         <div id="game-card" class="center-block bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hidden">
             <div id="game_started_header" class="flex justify-between items-center mb-6">
                 <div>
@@ -138,8 +138,31 @@
     </main>
 
     <!-- Подвал страницы -->
-    <footer class="text-center text-xs text-slate-400 p-4 border-t border-slate-200 bg-white">
-     Ver. 1.0 | {{footer}}
+    <footer id="game-footer" class="grid grid-cols-3 items-center text-xs text-slate-400 p-4 border-t border-slate-200 bg-white">
+        <div>
+        <button id="light_dark" class="theme-toggle" onclick="dark_light()">
+            <!-- the Moon (show in light theme) -->
+            <svg class="moon" xmlns="http://w3.org" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <!-- the Sun (show in dark theme) -->
+            <svg class="sun" xmlns="http://w3.org" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+        </button>
+        </div>		
+        <div style="text-align:center;">Ver. 1.0 | {{footer}}</div>  
+        <div></div>
     </footer>
 
     <!-- Модальное окно для демонстрации подсказок -->
@@ -885,11 +908,33 @@
             return frase;
         }
 
+        function dark_light() {
+            console.log("Событие смены темы светлая / темная");
+            document.body.classList.toggle('dark-theme');
+            // Проверяем, какой класс в итоге оказался у body
+            if (document.body.classList.contains('dark-theme')) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+            console.log("Тема сохранена:", localStorage.getItem('theme'));
+        }
+
 
         if (window.innerWidth < 768) {
             console.log('Show_radar disabled - window.innerWidth = '+window.innerWidth);
             document.querySelector('#show_radar').disabled = true;
         }
+
+        // При загрузке страницы проверяем, сохранена ли тема
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            console.log("saved theme: " + savedTheme)
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                console.log(document.body.classList);
+            }
+        });        
 
         // Вход сразу в блок текущей игры, если пользовавтель еще не завершил эту игру
         if (joined_the_game) {

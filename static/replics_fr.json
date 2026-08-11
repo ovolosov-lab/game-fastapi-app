@@ -15,10 +15,13 @@
     "Les capteurs sont silencieux, Capitaine. Le radar ne détecte que du bruit cosmique dans ce secteur. Nous devons changer le vecteur de recherche.",
     "Capitaine, nous nous aventurons dans le vide profond. L'ordinateur de bord recommande un virage.",
     "Ils ne nous comprennent toujours pas et nous perdons le contact ! Essayez d'envoyer juste un mot !",
-    "Nous sommes aux confins de la galaxie, monsieur ! Nous devons sauter dans la direction opposée !"
+    "Nous sommes aux confins de la galaxie, monsieur ! Nous devons sauter dans la direction opposée !", 
+    "Ne paniquez pas ! L'essentiel est de ne pas perdre la concentration et de garder votre serviette prête !",
+    "C'est précisément quand tu crois que les choses ne peuvent pas s'aggraver que de nouveaux horizons s'ouvrent soudainement devant toi", 
+    "Essayez de chercher dans un autre quadrant, Capitaine… Si vous vous rendez à Z'ha'dum, vous mourrez…"
   ],
   "warm": [
-    "Une faible impulsion a été captée ! L'énergie de similarité augmente.",
+    "Une faible impulsion a été captée ! L'énergie de similarité augmente...  Oh ! Ce n'est pas une lune. C'est une station spatiale !",
     "Les capteurs ont détecté une trace résiduelle. Nous franchissons le méridien souhaité.",
     "Nous avons un contact faible, monsieur ! L'objet se trouve quelque part dans ce quadrant !",
     "L'anomalie répond à nos mots. Continuez le bon travail !",
@@ -28,7 +31,8 @@
     "Le signal devient stable, Capitaine ! Nous sommes définitivement sur la bonne voie, mais le système stellaire cible n'a pas encore été identifié.",
     "Nous avons un verrouillage de fréquence stable ! L'ordinateur de bord confirme le cap, continuez à scanner le secteur.",
     "Les indicateurs radar se sont activés. La télémétrie est forte, monsieur, mais nous avons besoin de quelques données supplémentaires avant de pouvoir affiner la zone de recherche.",
-    "Nous sommes définitivement sur quelque chose ! L'essentiel est de garder le rythme ; notre destination est proche !"
+    "Nous sommes définitivement sur quelque chose ! L'essentiel est de garder le rythme ; notre destination est proche !",
+    "Le signal se renforce, Capitaine ! Il semble qu'ils nous envoient le nombre '42' !"
   ],
   "very_hot": [
     "Nous sommes en route, Capitaine ! Un peu plus de précision et nous établirons le contact !",
@@ -43,7 +47,9 @@
     "Cible identifiée ! Vous avez résolu ce mystère cosmique. Nous passons en hypervitesse !",
     "Contact établi, Capitaine ! L'équipage célèbre la victoire. Vous êtes un génie de la navigation !",
     "Le traducteur universel est prêt. Félicitations, Capitaine, le Premier Contact a officiellement eu lieu !",
-    "Décryptage réussi, Capitaine ! Mission accomplie !"
+    "Décryptage réussi, Capitaine ! Mission accomplie !  Que la Force soit avec vous, toujours !",
+    "Le contact avec une civilisation extraterrestre a été établi ! Vous avez prouvé que l'humanité est prête pour la communication interstellaire !",
+    "Grâce à vous, l'ordinateur a réussi à déchiffrer le message extraterrestre ! Mais que signifiait exactement le nombre «42 » ?"
   ],
   "help1":     "Le mot commence par la lettre '{hint}' !",
   "help2":     "La dernière lettre du mot est '{hint}' !",

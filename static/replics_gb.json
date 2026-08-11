@@ -15,10 +15,13 @@
     "The sensors are silent, Captain. Radar is detecting only cosmic noise in this sector. We need to change the search vector.",
     "Captain, we're flying into the deep void. The onboard computer recommends a turn.",
     "They still don't understand us and we're losing contact with them! Try sending just one word!", 
-    "We're at the very edge of the galaxy, sir! We need to jump in the opposite direction!"
+    "We're at the very edge of the galaxy, sir! We need to jump in the opposite direction!", 
+    "Don't panic! The main thing is to not lose concentration and keep your towel ready!",
+    "Exactly when you think things can't get worse, new horizons suddenly open up before you!", 
+    "Try searching in another quadrant, Captain. …If you fly to Za'ha'dum, you'll die…"
   ],
   "warm": [
-    "Caught a weak impulse! The energy of similarity is growing.",
+    "Caught a weak impulse! The energy of similarity is growing...  Oh! That’s no moon. It’s a space station!",
     "The sensors have detected a residual trace. We are crossing the desired meridian.",
     "We have a weak contact, sir! The object is somewhere in this quadrant!",
     "The anomaly is responding to our words. Keep up the good work!",
@@ -28,7 +31,8 @@
     "The signal is becoming stable, Captain! We're definitely on the right track, but the target star system hasn't been identified yet.",
     "We have a stable frequency lock! The onboard computer confirms the heading, continue scanning the sector.",
     "The radar indicators came to life. Telemetry is strong, sir, but we need a little more data before we can narrow down the search area.",
-    "We're definitely on to something! The main thing is to keep up the pace; our destination is close!"
+    "We're definitely on to something! The main thing is to keep up the pace; our destination is close!",
+    "The signal is getting stronger, Captain! It seems they're sending us the number '42'!"
   ],
   "very_hot": [
     "We're on course, Captain! A little more precision and we'll make contact!",
@@ -43,7 +47,9 @@
     "Target identified! You've solved this cosmic mystery. We're going hyperspeed!",
     "Contact established, Captain! The crew celebrates victory. You are a navigational genius!", 
     "The universal translator is ready to go. Congratulations, Captain, First Contact has officially taken place!",
-    "Decryption successful, Captain! Mission accomplished!"
+    "Decryption successful, Captain! Mission accomplished!  The Force will be with you, always!",
+    "Contact with the alien civilization has been established! You've proven that humanity is ready for interstellar communication!"
+    ,"Computer successfully decrypted the alien message! But what did the number '42' really mean?"
   ],
   "help1": "The word begins with the letter '{hint}'!",
   "help2": "The last letter of the word is '{hint}'!",
