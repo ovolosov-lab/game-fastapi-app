@@ -235,14 +235,14 @@ async def make_guess(
 
             similarity_percent = max(0.0, min(100.0, (1.0 - cos_distance) * 100.0))
 
-            if request.app.state.language == 'ru' and guessing_lang == 'ru' and similarity_percent > 70: 
+            if request.app.state.language == 'ru' and guessing_lang == 'ru' and similarity_percent > 60: 
                 common_counter = Counter(payload.word) & Counter(game_data.secret_word)
                 total_common = sum(common_counter.values())
                 avg_len = (len(payload.word) + len(game_data.secret_word)) / 2
                 pct_counter = (total_common / avg_len) * 100
                 logger.info(f"pct_counter = {pct_counter}")
                 
-                if pct_counter > 66.0:
+                if pct_counter > 60.0:
                     pct_fuzz:float = fuzz.ratio(payload.word, game_data.secret_word)
                     logger.info(f"pct_fuzz = {pct_fuzz}")
                     if pct_fuzz < similarity_percent:

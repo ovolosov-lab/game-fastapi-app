@@ -37,7 +37,7 @@
             <div id="game_started_header" class="flex justify-between items-center mb-6">
                 <div>
                     <h2 id="hidden-word" class="text-xl font-bold text-blue-600"></h2>
-                    <p class="text-xs text-slate-400 mt-1">{{try_guess}}</p>
+                    <p id="pod-zagolovok" class="text-xs text-slate-400 mt-1">{{try_guess}}</p>
                 </div>
                 <div id="timer-container" class="flex items-center space-x-3">
                     <!-- Блок таймера -->
@@ -261,6 +261,7 @@
                 startBtn.innerHTML = '{{starting_game}} <span class="dots">...</span>';
 
                 console.log("Start the Game! POST-request to the back-end:  /game/join/")
+                Object.assign(replics, {});
 
 
                 const response = await fetch('/game/join/', {
@@ -339,6 +340,7 @@
                 startBtn.style.opacity = '1.0';
                 startBtn.disabled = false;
                 startBtn.innerText = '{{start}}';
+                fill_replics();
             }
         }
 
@@ -380,6 +382,7 @@
                     console.log(`The running game appeared to be ${currentGameId} closed!  ${data.reason}`)
                     guesses.length = 0;
                     Object.assign(replics, {});
+                    have_replics = false;
 
                     if (data.reason == "ANOTHER_PLAYER_WON") {
                         endGame(false, "{{another_winner}}")
@@ -419,11 +422,7 @@
                             if ((attempts % 5) == 0) {
                                 showToast("💡 {{placeholder1}}", "toast")
                             }
-
                         }
-
-
-
                     }    
                 }
             } catch (error) {
@@ -471,7 +470,8 @@
                                 tmp_html = `<p style='padding-bottom:10px;'>{{starts_with_hint}} <b style="color:magenta">${data.first_letter}</b><p>`;
                                 
                                 if (have_replics){
-                                    replics['cold'].push(replics['help1'].replace("{hint}", data.first_letter.toUpperCase()))        
+                                    let fi_le_hlp = replics['help1'];
+                                    replics['cold'].push(fi_le_hlp.replace("{hint}", data.first_letter.toUpperCase()))        
                                 }
                             }
 
@@ -479,7 +479,8 @@
                                 tmp_html += `<hr/><p style='padding:10px;'>{{ends_with_hint}} <b style="color:magenta">${data.last_letter}</b><p>`;
                                 
                                 if (have_replics){
-                                    replics['cold'].push(replics['help2'].replace("{hint}", data.last_letter.toUpperCase()))        
+                                    let se_le_hlp = replics['help1'] ;                                   
+                                    replics['cold'].push(se_le_hlp.replace("{hint}", data.last_letter.toUpperCase()))        
                                 }
                             } 
 
