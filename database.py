@@ -288,10 +288,10 @@ async def create_new_game(session_factory: async_sessionmaker, app_state, force:
                 # Выбираем случайное слово 
                 select_word_query = text("""
                     SELECT w.id, w.word FROM words w 
-                    WHERE (w.language = :lang) AND (w.id NOT IN (SELECT g.secret_word_id FROM games g ORDER BY g.id DESC LIMIT 10)) AND (LENGTH(w.word) < :max_len) 
+                    WHERE (w.language = :lang) AND (w.id NOT IN (SELECT g.secret_word_id FROM games g ORDER BY g.id DESC LIMIT 10)) AND (LENGTH(w.word) < :max_len) AND (LENGTH(w.word) > :min_len)
                     ORDER BY random() LIMIT 1
                 """)
-                word_res = await session.execute(select_word_query, {"lang": language, "max_len": settings.max_word_len})
+                word_res = await session.execute(select_word_query, {"lang": language, "max_len": settings.max_word_len, "min_len": (3 if language == 'ru' else 2)})
                 word_data = word_res.fetchone()
                 if not word_data:
                     logger.error(f"Словарь слов на языке '{language}' не найден в базе данных. Заполните таблицу words для '{language}'")
