@@ -70,6 +70,19 @@ body.dark-theme #guess-form button {
 body.dark-theme #pod-zagolovok {
     color: white;
 }
+body.dark-theme #help-btn {
+  background-color: #014bd4;  
+  color: white;
+  cursor: pointer;
+}
+
+body.dark-theme #help-btn:hover {
+    background-color: #0a0d1d; 
+}
+body.dark-theme #guess-form button:hover {
+    background-color:#0a0d1d;
+} 
+
 
 #start-btn { margin-bottom: 15px; cursor:pointer; }
 #timer-container { padding-left: 8px; }
