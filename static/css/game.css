@@ -33,6 +33,10 @@ body.dark-theme {
   background-color: #ffffff;
 }
 
+#game_finished_header div {
+    max-width: 400px;
+}
+
 body.dark-theme .center-block {
     background-color: darkgray;
 }    
@@ -56,6 +60,16 @@ body.dark-theme #game-footer {
 
 body.dark-theme #game_finished_header div p {
     color: white; 
+}
+
+#you_won {
+    color:magenta;
+    font-family:cursive;
+    font-size:1.9rem;
+}
+
+body.dark-theme #you_won {
+    color: white;
 }
 
 body.dark-theme #guess-form input {

@@ -53,12 +53,12 @@
             var count = opts.particleCount || 50;
             var angle = (opts.angle === undefined ? 90 : opts.angle) * Math.PI / 180;
             var spread = (opts.spread === undefined ? 45 : opts.spread) * Math.PI / 180;
-            var startVelocity = opts.startVelocity || 45;
+            var startVelocity = opts.startVelocity || 55;
             var decay = opts.decay || 0.9;
             var colors = opts.colors || ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42', '#ffd066', '#1febff'];
             var ticks = opts.ticks || 200;
             var origin = opts.origin || { x: 0.5, y: 0.5 };
-            var gravity = opts.gravity === undefined ? 1 : opts.gravity;
+            var gravity = opts.gravity === undefined ? 0.9 : opts.gravity;
             var drift = opts.drift || 0;
 
             for (var i = 0; i < count; i++) {

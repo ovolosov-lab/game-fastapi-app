@@ -54,7 +54,7 @@
             <div id="game_finished_header" class="flex justify-between items-center mb-6 hidden">
                 <div>
                     <h2 id="game-over" class="text-xl font-bold text-slate-800 text-emerald-800">{{achieved_success}}</h2>
-                    <p class="text-xs text-slate-400 mt-1">{{new_announced}}</p>
+                    <!-- <p class="text-xs text-slate-400 mt-1">{{new_announced}}</p>  -->
                 </div>
                 <div class="flex flex-col justify-between space-y-[10px]">
                     <button id="start-again-btn" class="w-full py-3 bg-blue-600 text-white font-medium py-3 rounded-xl hover:bg-deep-space transition shadow-sm">
@@ -690,7 +690,7 @@
                 playWinSound();
                 historyList.style = "max-height: 50vh;";
                 gameStatusMsg.className = "mb-4 p-4 rounded-xl text-center font-bold bg-emerald-500 text-white shadow-md";
-                document.getElementById('game-over').innerHTML = `<b style='color:magenta;font-family:cursive;font-size:1.6rem;'>{{success2}}</b>`;
+                document.getElementById('game-over').innerHTML = `<b id="you_won">{{success2}}</b>`;
 
                 if (typeof confetti.reset === 'function') {
                     confetti.reset();
