@@ -19,21 +19,25 @@
     "Nous sommes aux confins de la galaxie, monsieur ! Nous devons sauter dans la direction opposée !", 
     "Ne paniquez pas ! L'essentiel est de ne pas perdre la concentration et de garder votre serviette prête !",
     "C'est précisément quand tu crois que les choses ne peuvent pas s'aggraver que de nouveaux horizons s'ouvrent soudainement devant toi", 
-    "Essayez de chercher dans un autre quadrant, Capitaine… Si vous vous rendez à Z'ha'dum, vous mourrez…"
+    "Essayez de chercher dans un autre quadrant, Capitaine… Si vous vous rendez à Z'ha'dum, vous mourrez…",
+    "Ne vous engagez pas trop profondément dans ce secteur, Capitaine. J'ai un mauvais pressentiment à ce sujet.", 
+    "Any other options you have?  Well... Houston, we have a problem!"
   ],
   "warm": [
     "Une faible impulsion a été captée ! L'énergie de similarité augmente...  Oh ! Ce n'est pas une lune. C'est une station spatiale !",
     "Les capteurs ont détecté une trace résiduelle. Nous franchissons le méridien souhaité.",
     "Nous avons un contact faible, monsieur ! L'objet se trouve quelque part dans ce quadrant !",
     "L'anomalie répond à nos mots. Continuez le bon travail !",
-    "Le radar a repéré une faible onde gravitationnelle ! Nous avons trouvé le bon quadrant, mais le sens de leurs messages reste flou."
+    "Le radar a repéré une faible onde gravitationnelle ! Nous avons trouvé le bon quadrant, mais le sens de leurs messages reste flou.",
+    "You are approaching closer... the slumbering power awakens within you... But cautious be! As soon as you step onto the dark path, it will always dominate your fate."
   ],
   "hot": [
     "Le signal devient stable, Capitaine ! Nous sommes définitivement sur la bonne voie, mais le système stellaire cible n'a pas encore été identifié.",
     "Nous avons un verrouillage de fréquence stable ! L'ordinateur de bord confirme le cap, continuez à scanner le secteur.",
     "Les indicateurs radar se sont activés. La télémétrie est forte, monsieur, mais nous avons besoin de quelques données supplémentaires avant de pouvoir affiner la zone de recherche.",
     "Nous sommes définitivement sur quelque chose ! L'essentiel est de garder le rythme ; notre destination est proche !",
-    "Le signal se renforce, Capitaine ! Il semble qu'ils nous envoient le nombre '42' !"
+    "Le signal se renforce, Capitaine ! Il semble qu'ils nous envoient le nombre '42' !",
+    "Capitaine, nous resserrons le filet de recherche ! La bonne réponse pourrait être près d'ici. Mais attention ! Vader est là. Maintenant, sur cette lune."
   ],
   "very_hot": [
     "Nous sommes en route, Capitaine ! Un peu plus de précision et nous établirons le contact !",

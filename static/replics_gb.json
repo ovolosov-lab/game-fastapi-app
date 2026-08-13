@@ -19,21 +19,25 @@
     "We're at the very edge of the galaxy, sir! We need to jump in the opposite direction!", 
     "Don't panic! The main thing is to not lose concentration and keep your towel ready!",
     "Exactly when you think things can't get worse, new horizons suddenly open up before you!", 
-    "Try searching in another quadrant, Captain. …If you fly to Za'ha'dum, you'll die…"
+    "Try searching in another quadrant, Captain. …If you fly to Za'ha'dum, you'll die…",
+    "Don't go too deep into this sector, Captain. I have a bad feeling about this.", 
+    "Any other options you have?  Well... Houston, we have a problem!"
   ],
   "warm": [
     "Caught a weak impulse! The energy of similarity is growing...  Oh! That’s no moon. It’s a space station!",
     "The sensors have detected a residual trace. We are crossing the desired meridian.",
     "We have a weak contact, sir! The object is somewhere in this quadrant!",
     "The anomaly is responding to our words. Keep up the good work!",
-    "Radar picked up a weak gravitational wave! We've found the right quadrant, but the meaning of their messages is still unclear."
+    "Radar picked up a weak gravitational wave! We've found the right quadrant, but the meaning of their messages is still unclear.",
+    "You are approaching closer... the slumbering power awakens within you... But cautious be! As soon as you step onto the dark path, it will always dominate your fate."
   ],
   "hot": [
     "The signal is becoming stable, Captain! We're definitely on the right track, but the target star system hasn't been identified yet.",
     "We have a stable frequency lock! The onboard computer confirms the heading, continue scanning the sector.",
     "The radar indicators came to life. Telemetry is strong, sir, but we need a little more data before we can narrow down the search area.",
     "We're definitely on to something! The main thing is to keep up the pace; our destination is close!",
-    "The signal is getting stronger, Captain! It seems they're sending us the number '42'!"
+    "The signal is getting stronger, Captain! It seems they're sending us the number '42'!",
+    "Captain, we are narrowing down the search! The right answer might be close. But, be careful! Vader is here. Right now, on this moon."
   ],
   "very_hot": [
     "We're on course, Captain! A little more precision and we'll make contact!",
