@@ -21,7 +21,7 @@ from rapidfuzz import fuzz
 from collections import Counter
 
 from config import BASE_DIR, ERROR_MESSAGES_EN, ERROR_MESSAGES_RU, MODEL_PATH, settings, logger
-from database import SessionDep, check_the_game_duration, check_the_player_involved, check_user, create_new_game, engine, create_all_tables, db_connection_check, fill_hints_cache, join_the_player, manage_hint, get_players_stats, get_the_game_statistic, user_exists, the_game_state_update, new_session
+from database import SessionDep, check_the_game_duration, check_the_player_involved, check_user, create_new_game, delete_user, engine, create_all_tables, db_connection_check, fill_hints_cache, join_the_player, manage_hint, get_players_stats, get_the_game_statistic, user_exists, the_game_state_update, new_session
 from schemas import GuessRequest, GuessResponse, HintCache, NewUser, User, UserInfo, WordsDataInfo
 from services import AsyncPeriodicTask, create_new_user, get_err_message, load_internationalization_data
 from tokens import create_access_token, get_current_user
@@ -168,6 +168,14 @@ async def initial_fill_words_list(dataInfo: WordsDataInfo, session: SessionDep, 
         await fill_words_list(dataInfo.filename, dataInfo.lang, request.app.state.embedder, session)
     response = RedirectResponse(url="/game/home/", status_code=303)    
     return response
+
+
+@app.post("/users/info/{userName}",  tags=["Game", "users"], summary="Users statistic")
+async def delete_the_user(userName: str, session: SessionDep, request: Request, current_user: UserInfo = Depends(get_current_user)):
+    if current_user.username == "admin":
+        if await delete_user(userName, session):
+            return {"result": "DELETED"}
+    return {"result": "FAULT"}
 
 
 @app.post("/words/unload",  tags=["Game", "word list, unload"], summary="Unload the word list")

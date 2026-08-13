@@ -8,7 +8,8 @@
     "Computer, run the simulation. It's time to boldly go where no man has gone before. Ready!",
     "We're engaging warp engines. The main thing is to not panic and keep your towel ready!", 
     "Attention, crew! Encrypted transmission from an unknown civilization detected!",
-    "The onboard linguistic processor is ready to decipher a message from an unknown civilization. Enter the first word for calibration!"
+    "The onboard linguistic processor is ready to decipher a message from an unknown civilization. Enter the first word for calibration!",    
+    "First we decrypt their message, then they'll decrypt ours! This is the WAY!"
   ],  
   "cold": [
     "The sensors are silent, Captain. This sector of space is absolute zero.",

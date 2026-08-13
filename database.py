@@ -533,67 +533,20 @@ async def create_ai_description(word: str, language: str, app_state) -> str:
     else: 
         return content.strip()
 
-"""
-async def create_ai_description(word: str, language: str, app_state) -> str:
-    # llm: Llama = app_state.llm
 
-    lang_rules = "Write STRICTLY IN ENGLISH. Start your answer directly with the description."
-    example_1_user = "Describe the object: 'Bicycle'"
-    example_1_assistant = "A two-wheeled vehicle that you ride by pushing pedals with your feet."
-    example_2_user = "Describe the place: 'Kitchen'"
-    example_2_assistant = "A room in a house where people cook food and use a stove."
-    final_user_prompt = f"Describe the place or object: '{word}'" 
-    if language == "ru": 
-        lang_rules = "Пиши СТРОГО НА РУССКОМ. Начинай свой ответ непосредственно с описания."
-        example_1_user = "Опиши объект: 'Велосипед'"
-        example_1_assistant = "Двухколесное транспортное средство, на котором вы едете, крутя педали."
-        example_2_user = "Опиши место: 'Кухня'"
-        example_2_assistant = "Комната в доме, где люди готовят себе еду на плите."
-        final_user_prompt = f"Опиши объект или место: '{word}'" 
-    if language == "fr": 
-        lang_rules = "Rédigez STRICTEMENT EN FRANÇAIS. Commencez votre réponse directement par la description."
-        example_1_user = "Décrivez l'objet : « Vélo »"
-        example_1_assistant = "Un véhicule à deux roues que l'on conduit en poussant sur des pédales avec les pieds."
-        example_2_user = "Décrivez le lieu : « Cuisine »"
-        example_2_assistant = "Une pièce de la maison où l'on prépare ses repas sur un poêle."
-        final_user_prompt = f"Décrivez un objet ou un lieu : « {word} »" 
-
-
-    prompt = (
-        f"<|im_start|>system\n"
-        f"Ты — ведущий игры 'Алиас'. Твоя единственная задача — дать простое описание слова из 1-2 предложений. "
-        f"ПРАВИЛО: Категорически запрещено называть слово {word}, его перевод на любой язык или однокоренные слова. "
-        f"{lang_rules}<|im_end|>\n"
-        f"<|im_start|>user\n{example_1_user}<|im_end|>\n"
-        f"<|im_start|>assistant\n{example_1_assistant}<|im_end|>\n"
-        f"<|im_start|>user\n{example_2_user}<|im_end|>\n"
-        f"<|im_start|>assistant\n{example_2_assistant}<|im_end|>\n"
-        f"<|im_start|>user\n{final_user_prompt}<|im_end|>\n"
-        f"<|im_start|>assistant\n"
-    )
+async def delete_user(userName: str, session: SessionDep) -> bool:
+    """Delete a user by username from the database."""
     try:
-        loop = asyncio.get_running_loop()
-
-        raw_output = await loop.run_in_executor(
-        None, 
-        lambda: llm(
-            prompt, 
-            max_tokens=60, 
-            temperature=0.2, 
-            stop=["<|im_end|>"],
-            stream=False
+        await session.execute(
+            text("DELETE FROM users WHERE username = :username"),
+            {"username": userName},
         )
-        )
-        output = cast(Dict[str, Any], raw_output)
-        theHint = output["choices"][0]["text"].strip()
-        return theHint.lower().replace(word, "*"*len(word))        
+        await session.commit()
+        return True
     except Exception as e:
-        logger.exception("Ошибка генерации подсказки моделью!")
-        return ""    
-"""
-             
-
-
+        await session.rollback()
+        logger.error(f"Error deleting user {userName}: {e}")
+        return False
 
           
 
