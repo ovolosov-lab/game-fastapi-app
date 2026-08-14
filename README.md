@@ -1,5 +1,5 @@
 # Guess the Word Game
-![License: MIT](https://img.shields.io/badge/License-MIT-green.svg) ![Python](https://img.shields.io/badge/Python-3.12-3776ab?logo=python&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql&logoColor=white)
+![License: MIT](https://img.shields.io/badge/License-MIT-green.svg) ![Python](https://img.shields.io/badge/Python-3.11.5-3776ab?logo=python&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql&logoColor=white)
 
 A simple semantic game project using FastAPI + pgvector: a web application built using FastAPI and PostgreSQL + pgvector
 and the sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2 model, fully containerized using Docker.
@@ -9,8 +9,8 @@ it can be said that this is an educational project.
 I would be delighted if you'd try this game and share your feedback, bug reports, or suggestions for new features!
 
 ## ✨ Key Features
-- **Hot and cold:** This is a "Hot and Cold" style game - depending on the semantic similarity between the words guessed and the player's name, 
-                     his answer is colored in the corresponding "temperature" color and the percentage of similarity is shown
+- **Hot and cold:** This is a "Hot and Cold" style game - Depending on the semantic similarity between the secret word and the player's guess, their answer is colored 
+                     in the corresponding "temperature" color, and the similarity percentage is displayed.
 - **Many players:** Multiple users participating in the game at the same time
 - **Continuous cycle of games:** Games follow one another continuously. Each game lasts 1 hour or until one player guesses the word. A new game is created immediately.
 - **Tips:** Several types of hints are available in games: the first and last letters of a word, similar words - analogs, 
@@ -70,6 +70,17 @@ The application requires the following variables (defined in your `.env`):
 - `JWT_SECRET` -  your_jwt_secret_key
 - `AI_API_PATH` - https://api.z.ai/api/coding/paas/v4
 - `AI_API_KEY` -  your api key to the model
+
+
+## 🙏 Credits
+
+This project is built using great open-source tools and models:
+
+*   **[FastEmbed](https://github.com)** — A fast and lightweight library from the Qdrant team for generating embeddings. Distributed under the MIT license.
+*   **[paraphrase-multilingual-MiniLM-L12-v2](https://huggingface.co)** — A multilingual model from the `sentence-transformers` community, providing excellent semantic accuracy. 
+                                                                           Distributed under the Apache 2.0 license.
+*   **[Hugging Face](https://huggingface.co)** — for hosting the model and providing infrastructure.
+
 
 ## 📄 License
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
