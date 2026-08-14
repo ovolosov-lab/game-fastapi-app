@@ -9,8 +9,8 @@ it can be said that this is an educational project.
 I would be delighted if you'd try this game and share your feedback, bug reports, or suggestions for new features!
 
 ## ✨ Key Features
-- **Hot and cold:** This is a "Hot and Cold" style game - depending on the semantic similarity between the words guessed and the player's name, 
-                     his answer is colored in the corresponding "temperature" color and the percentage of similarity is shown
+- **Hot and cold:** This is a "Hot and Cold" style game - Depending on the semantic similarity between the secret word and the player's guess, their answer is colored
+                    in the corresponding "temperature" color, and the similarity percentage is displayed.
 - **Many players:** Multiple users participating in the game at the same time
 - **Continuous cycle of games:** Games follow one another continuously. Each game lasts 1 hour or until one player guesses the word. A new game is created immediately.
 - **Tips:** Several types of hints are available in games: the first and last letters of a word, similar words - analogs, 
