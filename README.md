@@ -1,5 +1,5 @@
 # Guess the Word Game
-![License: MIT](https://img.shields.io/badge/License-MIT-green.svg) ![Python](https://img.shields.io/badge/Python-3.12-3776ab?logo=python&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql&logoColor=white)
+![License: MIT](https://img.shields.io/badge/License-MIT-green.svg) ![Python](https://img.shields.io/badge/Python-3.11.5-3776ab?logo=python&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql&logoColor=white)
 
 A simple semantic game project using FastAPI + pgvector: a web application built using FastAPI and PostgreSQL + pgvector
 and the sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2 model, fully containerized using Docker.
