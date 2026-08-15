@@ -251,7 +251,9 @@
             
             if (document.getElementById('show_radar').checked) {
                 hideRadar();
-            }                    
+            }    
+            ufoAnimationend();
+            clearInterval(radarInterval);               
             gameCard.classList.add('hidden');
             guessForm.classList.add('hidden');
             gameStartedHeader.classList.add('hidden');
@@ -604,17 +606,14 @@
                 }
                 typeMessage(getRandomPhrase('start'));
 
-                // Проверка каждые 20 секунд: с шансом 40% тарелка вылетит
+                // Проверка каждые 6 секунд: с 40% probability тарелка вылетит
                 if (radarInterval) clearInterval(radarInterval);
-                console.log('Устанавливаем интревал зпуска');
                 radarInterval = setInterval(() => {
-                    if (Math.random() < 0.5) { 
-                        console.log('Пришло время очередного запуска!');
+                    if (Math.random() < 0.4) { 
                         launchUFO();
                     }
-                }, 5000);
-
-                setTimeout(launchUFO, 2000);
+                }, 14000);
+                // setTimeout(launchUFO, 2000);
             }
         }
 
@@ -947,25 +946,19 @@
             // Если тарелка уже летит, игнорируем вызов
             if (ufo.classList.contains('fly')) return;
 
-            console.log("запускаем тарелку");
-
             // Генерируем случайную высоту старта и финиша (в процентах от высоты блока)
-            const startY = Math.floor(Math.random() * 70) + 10; // от 10% до 80%
-            const endY = Math.floor(Math.random() * 70) + 10;
+            const startY = Math.floor(Math.random() * 80) + 10; // от 10% до 80%
+            const endY = Math.floor(Math.random() * 80) + 10;
 
             // Передаем эти значения в CSS переменные
             ufo.style.setProperty('--start-y', `${startY}%`);
             ufo.style.setProperty('--end-y', `${endY}%`);
 
-            // Запускаем анимацию полета
             ufo.classList.add('fly');
-
-            console.log("тарелка летит!");
         }
 
         // Удаляем класс анимации, когда полет завершен, чтобы можно было запустить снова
         function ufoAnimationend() {
-            console.log("Сработало событие Animationend");
             ufo.classList.remove('fly');
         }
 
