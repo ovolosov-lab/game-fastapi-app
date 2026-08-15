@@ -121,6 +121,11 @@ body.dark-theme #guess-form button:hover {
     overflow: hidden;
 }
 
+#my-dynamic-content {
+    width: 100%;
+    height: 100%;
+}
+
 @media (768px <= width <= 1560px) {
     .radar-container {  transform-origin: top 50%; transform: scale(0.9);  }
 }
@@ -565,4 +570,55 @@ body.dark-theme .moon {
 
 body.dark-theme .sun {
   display: block;
+}
+
+.ufo {
+    position: absolute;
+    font-size: 24px; /* Размер эмодзи-тарелки */
+    line-height: 1;
+    user-select: none;
+    pointer-events: none; /* Чтобы тарелка не мешала кликам */
+    top: 50%;
+    left: -5px; /* Прячем за левым краем перед стартом */
+    opacity: 0;
+    transition: transform 0.1s linear;
+}
+
+
+/* Класс анимации, который мы будем включать через JS */
+.ufo.fly {
+    animation: ufoFlight 4s linear forwards;
+}
+
+/* Эффект легкого покачивания (вибрации) во время полета */
+.ufo-inner {
+    display: inline-block;
+    z-index: 9999;
+    animation: floatWobble 0.5s ease-in-out infinite alternate;
+}
+
+/* Траектория движения: слева направо с изменением высоты */
+@keyframes ufoFlight {
+    0% {
+        left: -50px;
+        top: var(--start-y, 30%);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1; /* Проявляется при старте */
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        left: 105%;
+        top: var(--end-y, 60%);
+        opacity: 0; /* Исчезает за правым краем */
+    }
+}
+
+/* Анимация покачивания вверх-вниз */
+@keyframes floatWobble {
+    0% { transform: translateY(-5px); }
+    100% { transform: translateY(5px); }
 }
