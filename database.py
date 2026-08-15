@@ -511,29 +511,26 @@ async def create_ai_description(word: str, language: str, app_state) -> str:
             imperativ = "Vous êtes l'animateur du jeu « Devinez le mot ». Votre mission : donner aux joueurs une brève description (1 à 2 phrases) du mot à deviner. Vous ne devez en aucun cas mentionner le mot caché ni aucun mot ayant la même racine."
             prompt = f"Le mot est « {word} ». Décrivez ce mot."
 
-    """ 
-        response = await llm.chat.completions.create(
-            model="GLM-5.2", 
-            temperature=0.7,
-            max_tokens=500,
-            extra_body={"thinking": {"type": "disabled"}}, 
-            messages=[
-                {
-                    "role": "system",
-                    "content": (imperativ)
-                },
-                {"role": "user", "content": prompt}
-            ]
-        )
-        logger.warning(f"обращение к АПИ модели GLM-5.2 !!!  Язык: {language}")
-        content = response.choices[0].message.content
+    response = await llm.chat.completions.create(
+        model="GLM-5.2", 
+        temperature=0.7,
+        max_tokens=500,
+        extra_body={"thinking": {"type": "disabled"}}, 
+        messages=[
+            {
+                "role": "system",
+                "content": (imperativ)
+            },
+            {"role": "user", "content": prompt}
+        ]
+    )
+    logger.warning(f"обращение к АПИ модели GLM-5.2 !!!  Язык: {language}")
+    content = response.choices[0].message.content
        
     if content is None:
         return "😔"
     else: 
         return content.strip()
-    """
-    return ""
         
 
 
