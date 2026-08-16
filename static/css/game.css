@@ -624,21 +624,14 @@ body.dark-theme .sun {
    background: radial-gradient(circle, rgba(255,255,255,1) 30%, rgba(255,255,255,0) 40%);
    border-radius: 50%;   
    z-index: 999;
-   
-   /* МАГИЯ FLEXBOX: Центрируем всё, что внутри */
    display: flex;
    justify-content: center; /* Центр по горизонтали */
    align-items: center;     /* Центр по вертикали */
 }
 
-/* Когда активируем кубок через JS: */
+/* активируем кубок */
 #winner-cup.active {
-   /* Перебиваем display: none, но сохраняем flex! */
-   display: flex !important; 
-   
-   /* Запуск наших отлаженных анимаций */
-   animation: 
-     fadeInOut 6s ease forwards;
+   animation: fadeInOut 6s ease forwards;
 }
 
 /* Стили для самой картинки КУБКА внутри блока */
@@ -647,8 +640,6 @@ body.dark-theme .sun {
    width: 80%;       /* На смартфонах кубок займет 80% экрана и не вылезет за края */
    height: auto;     /* Сохраняем пропорции картинки */
    padding: 40px;    /* Чтобы свечение вокруг кубка было красивым */
-   
-   /* Запускаем покачивание только для картинки */
    animation: Wobble 1.5s ease-in-out infinite alternate;
 }
 

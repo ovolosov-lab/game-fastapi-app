@@ -70,5 +70,7 @@
     "game_finished2": "Completed", 
     "player_earned1": "You scored", 
     "player_earned2": "points in your last game",
-    "starting_game": "Let's create a game"     
+    "starting_game": "Let's create a game", 
+    "UFO": "UFO detected. Not responding to queries. Departing."
+     
 }
