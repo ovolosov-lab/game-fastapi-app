@@ -584,20 +584,16 @@ body.dark-theme .sun {
     transition: transform 0.1s linear;
 }
 
-
-/* Класс анимации, который мы будем включать через JS */
 .ufo.fly {
     animation: ufoFlight 4s linear forwards;
 }
 
-/* Эффект легкого покачивания (вибрации) во время полета */
 .ufo-inner {
     display: inline-block;
     z-index: 9999;
-    animation: floatWobble 0.5s ease-in-out infinite alternate;
+    animation: Wobble 0.5s ease-in-out infinite alternate;
 }
 
-/* Траектория движения: слева направо с изменением высоты */
 @keyframes ufoFlight {
     0% {
         left: -50px;
@@ -617,8 +613,57 @@ body.dark-theme .sun {
     }
 }
 
-/* Анимация покачивания вверх-вниз */
-@keyframes floatWobble {
+
+/* Базовое состояние кубка */
+#winner-cup {
+   position: fixed; /* Фиксируем поверх всей игры */
+   top: 10%;
+   left: 0;
+   width: 100vw; /* Растягиваем на 100% ширины экрана */
+   height: 100vh; /* Растягиваем на 100% высоты экрана */
+   background: radial-gradient(circle, rgba(255,255,255,1) 30%, rgba(255,255,255,0) 40%);
+   border-radius: 50%;   
+   z-index: 999;
+   
+   /* МАГИЯ FLEXBOX: Центрируем всё, что внутри */
+   display: flex;
+   justify-content: center; /* Центр по горизонтали */
+   align-items: center;     /* Центр по вертикали */
+}
+
+/* Когда активируем кубок через JS: */
+#winner-cup.active {
+   /* Перебиваем display: none, но сохраняем flex! */
+   display: flex !important; 
+   
+   /* Запуск наших отлаженных анимаций */
+   animation: 
+     fadeInOut 6s ease forwards;
+}
+
+/* Стили для самой картинки КУБКА внутри блока */
+#winner-cup svg {
+   max-width: 500px; /* Ограничиваем максимальный размер на больших мониторах */
+   width: 80%;       /* На смартфонах кубок займет 80% экрана и не вылезет за края */
+   height: auto;     /* Сохраняем пропорции картинки */
+   padding: 40px;    /* Чтобы свечение вокруг кубка было красивым */
+   
+   /* Запускаем покачивание только для картинки */
+   animation: Wobble 1.5s ease-in-out infinite alternate;
+}
+
+#winner-cup.hidden {
+    display: none !important;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  16.66% { opacity: 1; } /* Проявление за 1 сек */
+  83.33% { opacity: 1; } /* Удержание 4 сек */
+  100% { opacity: 0; }   /* Исчезновение за 1 сек */
+}
+
+@keyframes Wobble {
     0% { transform: translateY(-5px); }
     100% { transform: translateY(5px); }
 }
