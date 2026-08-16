@@ -615,11 +615,12 @@
 
                             if (data.anagram != "") {
                                 tmp_html += `<hr/><p style='padding:10px;'>{{anagram_hint}} <b style="color:magenta">${data.anagram}</b><p>`;
+                                typeMessage("{{vatson}}");    
                             } 
 
-                            console.log(data.ai);
                             if (data.ai != "") {
                                 tmp_html += `<hr/><p style='padding:10px;'>{{ai_hint}} <b style="color:magenta">${data.ai}</b><p>`;
+                                typeMessage("{{vatson}}");    
                             } 
                             hintText.innerHTML = tmp_html;
                         } else {

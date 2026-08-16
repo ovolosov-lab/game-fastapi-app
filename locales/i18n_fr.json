@@ -71,5 +71,6 @@
     "player_earned1": "Lors de votre dernier match, vous avez marqué", 
     "player_earned2": "ps.", 
     "starting_game": "Créons un jeu", 
-    "UFO": "OVNI détecté. Ne répond pas aux requêtes. En train de partir."
+    "UFO": "OVNI détecté. Ne répond pas aux requêtes. En train de partir.",
+    "vatson": "Avec des indices comme ceux-ci, deviner le mot est élémentaire, Watson.!"
 }

@@ -9,7 +9,8 @@
     "Nous engageons les moteurs de distorsion. L'essentiel est de ne pas paniquer et de garder votre serviette prête !",
     "Attention, équipage ! Transmission cryptée d'une civilisation inconnue détectée !",
     "Le processeur linguistique embarqué est prêt à déchiffrer un message d'une civilisation inconnue. Entrez le premier mot pour l'étalonnage !",    
-    "First we decrypt their message, then they'll decrypt ours! This is the WAY!"
+    "First we decrypt their message, then they'll decrypt ours! This is the WAY!",
+    "Nous faisons tous partie du club des devinettes de mots. Et voici la première règle : ne parlez de notre club nulle part."
   ],
   "cold": [
     "Les capteurs sont silencieux, Capitaine. Ce secteur de l'espace est à zéro absolu.",
@@ -29,7 +30,8 @@
     "Nous avons un contact faible, monsieur ! L'objet se trouve quelque part dans ce quadrant !",
     "L'anomalie répond à nos mots. Continuez le bon travail !",
     "Le radar a repéré une faible onde gravitationnelle ! Nous avons trouvé le bon quadrant, mais le sens de leurs messages reste flou.",
-    "You are approaching closer... the slumbering power awakens within you... But cautious be! As soon as you step onto the dark path, it will always dominate your fate."
+    "You are approaching closer... the slumbering power awakens within you... But cautious be! As soon as you step onto the dark path, it will always dominate your fate.", 
+    "Capitaine, vous n'accomplirez pas votre destinée si vous ne renoncez pas à l'illusion que tout dans ce monde dépend de vous."
   ],
   "hot": [
     "Le signal devient stable, Capitaine ! Nous sommes définitivement sur la bonne voie, mais le système stellaire cible n'a pas encore été identifié.",

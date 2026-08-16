@@ -9,7 +9,8 @@
     "We're engaging warp engines. The main thing is to not panic and keep your towel ready!", 
     "Attention, crew! Encrypted transmission from an unknown civilization detected!",
     "The onboard linguistic processor is ready to decipher a message from an unknown civilization. Enter the first word for calibration!",    
-    "First we decrypt their message, then they'll decrypt ours! This is the WAY!"
+    "First we decrypt their message, then they'll decrypt ours! This is the WAY!",
+    "We're all now in the word-guessing club. And here's the first rule of the club: don't mention our club anywhere."
   ],  
   "cold": [
     "The sensors are silent, Captain. This sector of space is absolute zero.",
@@ -29,7 +30,8 @@
     "We have a weak contact, sir! The object is somewhere in this quadrant!",
     "The anomaly is responding to our words. Keep up the good work!",
     "Radar picked up a weak gravitational wave! We've found the right quadrant, but the meaning of their messages is still unclear.",
-    "You are approaching closer... the slumbering power awakens within you... But cautious be! As soon as you step onto the dark path, it will always dominate your fate."
+    "You are approaching closer... the slumbering power awakens within you... But cautious be! As soon as you step onto the dark path, it will always dominate your fate.", 
+    "Captain, you won't fulfill your destiny if you don't let go of the illusion that everything in this world depends on you."
   ],
   "hot": [
     "The signal is becoming stable, Captain! We're definitely on the right track, but the target star system hasn't been identified yet.",
