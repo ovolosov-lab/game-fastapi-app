@@ -6,6 +6,10 @@ body.dark-theme {
   color: #fff;
 }
 
+button {
+    cursor: pointer;
+}
+
 .game-grid-container {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr; 

@@ -865,7 +865,7 @@
     outline-style: none;
   }
   .disabled\:cursor-not-allowed:disabled {
-    cursor: not-allowed;
+    cursor: not-allowed !important;
   }
   .disabled\:opacity-50:disabled {
     opacity: 50%;
