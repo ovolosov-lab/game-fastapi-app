@@ -8,13 +8,14 @@ from fastembed import TextEmbedding
 import numpy as np
 from sqlalchemy.sql import func
 from contextlib import asynccontextmanager
+import urllib.parse
 import uvicorn
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import text
-from fastapi import Cookie, FastAPI, Form, Depends, HTTPException, Request
+from fastapi import Cookie, FastAPI, Form, Depends, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from openai import AsyncOpenAI
 from rapidfuzz import fuzz
@@ -23,7 +24,7 @@ from collections import Counter
 from config import BASE_DIR, ERROR_MESSAGES_EN, ERROR_MESSAGES_RU, MODEL_PATH, settings, logger
 from database import SessionDep, check_the_game_duration, check_the_player_involved, check_user, create_new_game, delete_user, engine, create_all_tables, db_connection_check, fill_hints_cache, join_the_player, manage_hint, get_players_stats, get_the_game_statistic, user_exists, the_game_state_update, new_session
 from schemas import GuessRequest, GuessResponse, HintCache, NewUser, User, UserInfo, WordsDataInfo
-from services import AsyncPeriodicTask, create_new_user, get_err_message, load_internationalization_data
+from services import AsyncPeriodicTask, create_new_user, get_err_message, load_internationalization_data, verify_telegram_data
 from tokens import create_access_token, get_current_user
 from words import SUCCESS_THRESHOLD_PERCENT, detect_language, fill_words_list, generate_embedding, unload_words_list
 
@@ -132,6 +133,28 @@ async def user_auth(user: Annotated[User, Form()], session: SessionDep) -> Redir
         return response
 
 
+# Telegram User authorization and token generation, setting http-only cookie with the token and redirecting to the main page if authorization is successful
+@app.get("/telegram/auth",  tags=["Game", "Telegram", "Authorization"], summary="Telegram user authorization")
+async def telegram_auth(session: SessionDep, tg_data: str = Query(...)) -> RedirectResponse:
+    user_data_raw = verify_telegram_data(tg_data, settings.bot_token)
+    tg_user = json.loads(user_data_raw["user"])
+    tg_id = str(tg_user["id"])
+    username:str = (tg_user.get("username", tg_user.get("first_name")) or "TG") + f"_{tg_id}"
+    tg_lang = tg_user.get("language_code", "ru")
+    userid: int = await check_user(username, f"M_{tg_id}_W62k0", session) 
+
+    if (userid == 0):
+        new_user = NewUser(username=username, secret=settings.friend_reference, password1=f"M_{tg_id}_W62k0", password2=f"M_{tg_id}_W62k0") 
+        return await create_new_user(new_user, session, True)
+    else:    
+        token: str = create_access_token(data={"username": username, "userid": str(userid), "language": tg_lang})
+        # set http-only token in cookie and redirect to main page
+        response = RedirectResponse(url="/game/home/", status_code=303)
+        response.set_cookie(key="access_token", value=token, httponly=True, secure=True, samesite="none")
+        logger.success(f'Пользователь ТЕЛЕГРАМ "{username}" успешно авторизовался в программе. Язык {tg_lang}')
+        return response
+
+
 # Create a new user with the registration form data, checking the password confirmation and the uniqueness of the username, 
 # setting error message in cookie and redirecting to the auth page if something is wrong, otherwise - creating a new user, his token and redirecting to the main page
 @app.post("/users/add",  tags=["Game", "new user"], summary="Add a new user")
@@ -143,13 +166,14 @@ async def add_user(new_user: Annotated[NewUser, Form()], session: SessionDep) ->
             return response
         else:
             if new_user.secret == settings.friend_reference:  
-                return await create_new_user(new_user, session)
+                return await create_new_user(new_user, session, False)
             else:  # введенное секретное слово не совпадает с правильным из настроек 
                 response = RedirectResponse(url="/", status_code=303)
                 response.set_cookie(key="flash_msg", value=quote(get_err_message("secret_word", "Секретное слово неверное", settings.language)), httponly=True)
                 return response
     else:
-        response = RedirectResponse(url="/game/home/", status_code=303)
+        response = RedirectResponse(url="/", status_code=303)
+        response.set_cookie(key="flash_msg", value=quote(get_err_message("password_mismatch","Пароли не совпадают", settings.language)), httponly=True)
         return response
 
 

@@ -89,8 +89,9 @@ class HintCache(HintResponse):
     gameid: Annotated[int, Field(description="current game id")]   
     size: int
 
-
-
 class WordRequest(BaseModel):
     word: str
     language: str
+
+class TelegramAuthSchema(BaseModel):
+    init_data: str    

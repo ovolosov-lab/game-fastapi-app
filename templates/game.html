@@ -914,6 +914,8 @@
             // Вычисляем радиус (расстояние от центра в пикселях)
             const maxRadius = 240; 
             const radius = maxRadius * (1 - (similarityPercent / 100));
+
+            if (radius > 0.01 && radius < 6) { radius = radius + 5; }
             
             // Выбираем случайный угол направления от 0 до 2*PI (в радианах)
             const angle = Math.random() * 2 * Math.PI;

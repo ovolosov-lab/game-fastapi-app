@@ -130,6 +130,7 @@ class Settings(BaseSettings):
     check_interval: int = 60 # интервал проверки на "время игры истекло"
     ai_api_path: str = ""
     ai_api_key: str = ""
+    bot_token: str = "TELEGRAM_BOT_TOKEN"  #  t.me/Fastapi_PGVector_Game_bot   MyGameBot
     
 
     # Указываем, откуда брать данные
