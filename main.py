@@ -116,6 +116,12 @@ async def regstration_page(request: Request, i18n_data: dict = Depends(lambda: l
     return templates.TemplateResponse(request, "reg.html", {"request": request, **i18n_data})
 
 
+# Get the landing page for the Telegram 
+@app.get("/telegram", tags=["Game", "telegram"], summary="Get the landing page for the Telegram")
+async def get_telegram_loader_page(request: Request):
+    return templates.TemplateResponse(request, "tg_landing.html")
+
+
 # User authorization and token generation, setting http-only cookie with the token and redirecting to the main page if authorization is successful, otherwise - redirecting to the auth page with error message in cookie
 @app.post("/users/auth",  tags=["Game", "user authorization"], summary="๊")
 async def user_auth(user: Annotated[User, Form()], session: SessionDep) -> RedirectResponse:
