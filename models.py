@@ -58,10 +58,9 @@ class WordOrm(Base):
     __tablename__ = "words"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)   
     word: Mapped[str] = mapped_column(String(50))
-    # Задаем векторную колонку. Размерность 384 — для модели MiniLM-L12-v2
     embedding: Mapped[list] = mapped_column(Vector(384), nullable=False)   
-    # метаданные для фильтрации (язык)
     language: Mapped[str] = mapped_column(String(2))
+    cat_id: Mapped[int] = mapped_column(Integer, nullable=True)
 
     __table_args__ = (
         Index(
@@ -91,3 +90,12 @@ class DescriptOrm(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)   
     word: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
     description: Mapped[str] = mapped_column(String(2000))
+
+class CategoryOrm(Base):
+    __tablename__ = "categories"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)   
+    ru: Mapped[str] = mapped_column(String(100))
+    en: Mapped[str] = mapped_column(String(100))
+    fr: Mapped[str] = mapped_column(String(100))
+    image: Mapped[str] = mapped_column(String(50))
+

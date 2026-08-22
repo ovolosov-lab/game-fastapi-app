@@ -43,6 +43,7 @@ class UserInfo(BaseModel):
 class WordsDataInfo(BaseModel):
     filename: Annotated[str,  Field(min_length=3, max_length=20)]
     lang: Annotated[str, Field(min_length=2, max_length=2)]
+    clear: Annotated[str, Field(min_length=1, max_length=1, description="Если равно Y то все имеющиеся в таблице слова этого языка предварительно удаляются")]
 
 class GuessRequest(BaseModel):
     gameid: Annotated[int, Field(description="current game id")] 

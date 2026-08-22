@@ -2,13 +2,16 @@ import asyncio
 from datetime import datetime
 
 from fastapi import Depends, HTTPException, Request
+from fastembed import TextEmbedding
+import numpy as np
 from openai import AsyncOpenAI
 from sqlalchemy import URL, insert, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from typing import Annotated, Any, Dict, cast
 # from llama_cpp import Llama
-from models import Base, WordOrm
+from lang import create_word_prompt
+from models import Base, CategoryOrm, WordOrm
 from schemas import HintCache, HintResponse
 from config import settings, logger
 
@@ -88,7 +91,9 @@ async def create_all_tables() -> None:
             logger.success("All previous database tables have been dropped.")
         
         await conn.run_sync(Base.metadata.create_all)
-        logger.success("Database tables were created successfully")        
+        logger.success("Database tables were created successfully")       
+
+        await conn.execute(text("ALTER TABLE words ADD COLUMN IF NOT EXISTS cat_id integer;")) 
         
 
 async def db_add_record(session: AsyncSession, model_instance: Base, log_label: str = "Record") -> dict:
@@ -113,7 +118,7 @@ async def background_checks(session_factory: async_sessionmaker) -> None:
 
 
 # сохранение в БД (таблица words) списка слов и их эмбеддингов
-async def insert_words2db(words: list[str], embeddings_list: list[list[float]], lang: str, session: AsyncSession) -> None:
+async def insert_words2db(words: list[str], embeddings_list: list[list[float]], categories:list[int], lang: str, session: AsyncSession) -> None:
     # Проверяем, какие слова из текущего БАТЧА уже есть в БД
     stmt = select(WordOrm.word).where(WordOrm.language == lang, WordOrm.word.in_(words))
     result = await session.execute(stmt)
@@ -121,7 +126,7 @@ async def insert_words2db(words: list[str], embeddings_list: list[list[float]], 
     existing_words = set(result.scalars().all())
 
     # Формируем список словарей для слов НЕ найденных в таблице words:
-    new_data = [{"word": w, "embedding": e, "language": lang} for w, e in zip(words, embeddings_list) if w not in existing_words]
+    new_data = [{"word": w, "embedding": e, "language": lang, "cat_id": c} for w, e, c in zip(words, embeddings_list, categories) if w not in existing_words]
 
     # Если все слова из этого батча уже есть в базе, просто выходим
     if not new_data:
@@ -358,8 +363,9 @@ async def get_the_game_statistic(userid, session: SessionDep):
                 LENGTH(w.word) as word_len, 
                 w.language, 
                 EXTRACT(EPOCH FROM (LOCALTIMESTAMP - g.started))::INTEGER AS seconds_passed, 
-                COALESCE((SELECT ww.word FROM words ww INNER JOIN games gg ON ww.id=gg.secret_word_id WHERE gg.id=(g.id - 1) LIMIT 1), '') as last_word                                 
-            FROM games g INNER JOIN words w ON g.secret_word_id=w.id
+                COALESCE((SELECT ww.word FROM words ww INNER JOIN games gg ON ww.id=gg.secret_word_id WHERE gg.id=(g.id - 1) LIMIT 1), '') as last_word, 
+                COALESCE(c.image, 'others.jpg') AS image                                  
+            FROM games g INNER JOIN words w ON g.secret_word_id=w.id INNER JOIN categories c ON w.cat_id=c.id
             LEFT JOIN players p ON p.gameid = g.id AND p.userid=:userid
             WHERE g.finished IS NULL
             LIMIT 1
@@ -499,7 +505,7 @@ async def fill_hints_cache(gameid: int, word: str, session: SessionDep, app_stat
 
 
 async def create_ai_description(word: str, language: str, app_state) -> str:
-    llm: AsyncOpenAI = app_state.llm
+    llm = cast(AsyncOpenAI, app_state.llm)
 
     imperativ:str = "Ты - ведущий в игре 'Угадай слово'. Твоя задача: Дать краткое (1-2 предложения) описание слова для игроков, которое поможет им угадать это слово, НИ В КОЕМ СЛУЧАЕ не называя это загаданное слово или однокоренные с ним слова."
     prompt:str = f"Загаданное слово: {word}. Дай описание слова."
@@ -547,6 +553,99 @@ async def delete_user(userName: str, session: SessionDep) -> bool:
         await session.rollback()
         logger.error(f"Error deleting user {userName}: {e}")
         return False
+
+
+async def add_categories(session: SessionDep, embedder: TextEmbedding):
+    category_centroids = {}
+    ANCHOR_DATA = {
+        "1": ["animal", "prey", "dog", "cat", "bird", "fish", "horse", "elephant", "lion", "tiger", "bear", "wolf", "fox", "rabbit", "mouse", "monkey", "eagle", "owl", "shark", "whale", "snake", "frog", "bee", "spider", "deer", "cow", "sheep", "pig", "chicken", "duck", "paw", "tail"],
+        "2": ["herb", "plant", "tree", "flower", "grass", "mushroom", "leaf", "root", "branch", "forest", "oak", "pine", "rose", "tulip", "daisy", "sunflower", "cactus", "bush", "fern", "moss", "bark", "seed", "sprout", "weed", "wood", "ivy", "palm"],
+        "3": ["meal", "bread", "meat", "milk", "bakon", "water", "apple", "banana", "tomato", "potato", "cheese", "butter", "soup", "salad", "sugar", "salt", "pepper", "coffee", "tea", "juice", "wine", "beer", "rice", "pasta", "egg", "fish", "cake", "chocolate", "fruit", "vegetable", "onion", "garlic", "whiskey"],
+        "4": ["man", "woman", "child", "baby", "father", "mother", "brother", "sister", "family", "head", "face", "eye", "ear", "nose", "mouth", "hair", "hand", "arm", "leg", "foot", "heart", "blood", "brain", "body", "soul", "friend", "person", "people", "joy", "fear", "vein", "disease"],
+        "5": ["doctor", "teacher", "engineer", "driver", "writer", "actor", "artist", "singer", "chef", "baker", "builder", "lawyer", "police", "soldier", "nurse", "pilot", "farmer", "sport", "football", "chess", "hobby", "work", "job", "career", "manager", "clerk", "worker", "scientist", "judge"],
+        "6": ["jacket", "coat", "shirt", "trousers", "jeans", "dress", "skirt", "sweater", "boots", "shoes", "socks", "hat", "cap", "gloves", "scarf", "tie", "belt", "bag", "backpack", "wallet", "ring", "necklace", "watch", "glasses", "suit", "uniform", "pocket", "button"],
+        "7": ["table", "chair", "bed", "sofa", "wardrobe", "door", "window", "wall", "floor", "roof", "house", "room", "kitchen", "plate", "cup", "spoon", "fork", "knife", "fridge", "lamp", "mirror", "towel", "pillow", "blanket", "curtain", "carpet", "clock", "key", "soap", "lock"],
+        "8": ["hammer", "saw", "screwdriver", "pliers", "wrench", "drill", "axe", "shovel", "nail", "screw", "phone", "computer", "laptop", "camera", "battery", "wire", "device", "gadget", "weapon", "gun", "sword", "scissors", "tape", "ladder", "instrument", "tool", "engine", "robot"],
+        "9": ["car", "bus", "train", "plane", "ship", "boat", "bicycle", "motorcycle", "truck", "wheel", "engine", "road", "street", "track", "station", "airport", "port", "driver", "pilot", "passenger", "flight", "trip", "journey", "traffic", "bridge", "tunnel"],
+        "10": ["city", "town", "village", "country", "world", "earth", "sun", "moon", "star", "sky", "sea", "ocean", "river", "lake", "mountain", "hill", "valley", "desert", "island", "beach", "stone", "sand", "wind", "rain", "snow", "cloud", "weather", "map", "continent", "shore"],
+        "11": ["book", "music", "song", "guitar", "piano", "picture", "painting", "movie", "film", "theatre", "dance", "game", "history", "science", "math", "physics", "language", "word", "letter", "holiday", "party", "museum", "poem", "story", "statue", "school", "university"],
+        "12": ["time", "year", "month", "week", "day", "hour", "minute", "second", "number", "money", "price", "law", "rule", "order", "peace", "war", "life", "death", "truth", "lie", "love", "hate", "mind", "thought", "idea", "reason", "fact", "secret", "future", "past", "rage", "sadness", "policy", "authority", "power", "guilt", "government", ""]
+    }    
+    result = await session.execute(text("SELECT COUNT(*) AS cnt FROM categories")) 
+    row = result.first()
+    if row and row.cnt == 0:
+        await db_add_record(session, CategoryOrm(id=1, ru="animals", en='animals', fr="animals", image='animqals.jpg'), "Category animals")
+        await db_add_record(session, CategoryOrm(id=2, ru="plants", en="plants", fr="plants", image='plants.jpg'), "Category plants")
+        await db_add_record(session, CategoryOrm(id=3, ru="meal", en="meal", fr="meal", image='meal.jpg'), "Category meal")
+        await db_add_record(session, CategoryOrm(id=4, ru="human", en="human", fr="human", image='human.jpg'), "Category human")
+        await db_add_record(session, CategoryOrm(id=5, ru="activity", en="activity", fr="activity", image='activity.jpg'), "Category activity")
+        await db_add_record(session, CategoryOrm(id=6, ru="dress", en="dress", fr="dress", image='dress.jpg'), "Category dress")
+        await db_add_record(session, CategoryOrm(id=7, ru="home", en="home", fr="home", image='home.jpg'), "Category home")
+        await db_add_record(session, CategoryOrm(id=8, ru="technics", en="technics", fr="technics", image='technics.jpg'), "Category technics")
+        await db_add_record(session, CategoryOrm(id=9, ru="transport", en="transport", fr="transport", image='transport.jpg'), "Category transport")
+        await db_add_record(session, CategoryOrm(id=10, ru="geography", en="geography", fr="geography", image='geography.jpg'), "Category geography")
+        await db_add_record(session, CategoryOrm(id=11, ru="culture", en="culture", fr="culture", image='culture.jpg'), "Category culture")
+        await db_add_record(session, CategoryOrm(id=12, ru="concepts", en="concepts", fr="concepts", image='concepts.jpg'), "Category concepts")
+        await db_add_record(session, CategoryOrm(id=13, ru="others", en="others", fr="others", image='others.jpg'), "Category others")
+
+    for cat_name, anchors in ANCHOR_DATA.items():
+        # fastembed принимает список строк и возвращает генератор векторов
+        # Превращаем его в массив numpy: матрица размера [N, 384]
+        templated_anchors = [f"This word is {word}" for word in anchors]
+        anchor_embeddings = np.array(list(embedder.embed(templated_anchors)))
+        # Усредняем векторы по строкам (dim=0 в torch — это axis=0 в numpy)
+        centroid_vector = np.mean(anchor_embeddings, axis=0)        
+        # Нормализуем вектор (делим на его L2-норму) для корректного подсчета сходства
+        centroid_vector = centroid_vector / np.linalg.norm(centroid_vector)        
+        category_centroids[cat_name] = centroid_vector
+
+    try:
+        res = await session.execute(text("SELECT id, word, language FROM words"))  
+        if res:
+            words_to_update = res.mappings().all()
+            logger.info(f"Найдено {len(words_to_update)} слов для разметки.")
+            for row in words_to_update:
+                category, score = predict_category(embedder, row.word, row.language, category_centroids)
+                if score < 0.50:
+                    category = "13"
+                logger.info(f"Слово {row.word}.  Язык {row.language}.  Категория {category}  - {score}")
+                #await session.execute(text("UPDATE words SET cat_id = :category WHERE id = :id"),{"category": int(category), "id": row.id})
+                #await session.commit()
+            
+            logger.success("Разметка таблицы слов категориями успешно завершена!")
+    except Exception as e:
+        # await session.rollback()
+        logger.error(f"Ошибка разметки таблицы слов категориями")
+
+
+
+def predict_category(embedder: TextEmbedding, secret_word: str, language: str, category_centroids):
+    if language == "ru":
+        language = "en"
+    prompt = create_word_prompt(secret_word, language)   
+    # logger.info(f"Создан промпт для языка {language} : '{prompt}'")   
+    word_embedding = next(iter(embedder.embed([prompt])))  
+    # Нормализуем вектор слова
+    word_embedding = word_embedding / np.linalg.norm(word_embedding)
+    best_category = "13"
+    best_score = -1.0
+    
+    # Сравниваем с центроидами
+    for cat_name, centroid in category_centroids.items():
+        # Так как оба вектора нормализованы, их скалярное произведение (dot product)
+        # математически равно косинусному сходству (cos_sim)
+        score = np.dot(word_embedding, centroid)
+        
+        if score > best_score:
+            best_score = score
+            best_category = cat_name
+            
+    if best_score < 0.50:
+        return "13", best_score
+        
+    return best_category, best_score
+         
+
 
           
 

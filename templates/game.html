@@ -414,7 +414,7 @@
                     document.getElementById('attempts').innerText = attempts;
                 
                     // Очищаем историю предыдущей игры, если она была
-                    historyList.innerHTML = '';
+                    historyList.innerHTML = `<img src="/static/img/${data.image}" />`;
                     historyList.style = "";
                     firstGuess = null;
                     secondGuess = null;
@@ -815,7 +815,7 @@
                 winnerCup.classList.remove('hidden');
                 winnerCup.classList.add('active');
                 playWinSound();
-                historyList.style = "max-height: 50vh;";
+                historyList.style = "max-height: calc(100vh - 488px) !important;";
                 gameStatusMsg.className = "mb-4 p-4 rounded-xl text-center font-bold bg-emerald-500 text-white shadow-md";
                 document.getElementById('game-over').innerHTML = `<b id="you_won">{{success2}}</b>`;
 

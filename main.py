@@ -22,11 +22,13 @@ from rapidfuzz import fuzz
 from collections import Counter
 
 from config import BASE_DIR, ERROR_MESSAGES_EN, ERROR_MESSAGES_RU, MODEL_PATH, settings, logger
-from database import SessionDep, check_the_game_duration, check_the_player_involved, check_user, create_new_game, delete_user, engine, create_all_tables, db_connection_check, fill_hints_cache, join_the_player, manage_hint, get_players_stats, get_the_game_statistic, user_exists, the_game_state_update, new_session
+from database import SessionDep, add_categories, check_the_game_duration, check_the_player_involved, check_user, create_new_game, db_add_record, delete_user, engine, create_all_tables, db_connection_check, fill_hints_cache, join_the_player, manage_hint, get_players_stats, get_the_game_statistic, user_exists, the_game_state_update, new_session
+from lang import detect_language
+from models import CategoryOrm
 from schemas import GuessRequest, GuessResponse, HintCache, NewUser, User, UserInfo, WordsDataInfo
 from services import AsyncPeriodicTask, create_new_user, get_err_message, load_internationalization_data, verify_telegram_data
 from tokens import create_access_token, get_current_user
-from words import SUCCESS_THRESHOLD_PERCENT, detect_language, fill_words_list, generate_embedding, unload_words_list
+from words import SUCCESS_THRESHOLD_PERCENT, fill_words_list, generate_embedding, unload_words_list
 
 
 templates: Jinja2Templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
@@ -195,6 +197,35 @@ async def home_page(session: SessionDep, request: Request, current_user: UserInf
 @app.post("/words/add",  tags=["Game", "word list"], summary="Initial formation of the word list")
 async def initial_fill_words_list(dataInfo: WordsDataInfo, session: SessionDep, request: Request, current_user: UserInfo = Depends(get_current_user)) -> RedirectResponse:
     if current_user.username == "admin":
+        result = await session.execute(text("SELECT COUNT(*) AS cnt FROM categories")) 
+        row = result.first()
+        if row and row.cnt == 0:
+            logger.info("Создаем список категорий")
+            await db_add_record(session, CategoryOrm(id=1, ru="animals", en='animals', fr="animals", image='animqals.jpg'), "Category animals")
+            await db_add_record(session, CategoryOrm(id=2, ru="plants", en="plants", fr="plants", image='plants.jpg'), "Category plants")
+            await db_add_record(session, CategoryOrm(id=3, ru="meal", en="meal", fr="meal", image='meal.jpg'), "Category meal")
+            await db_add_record(session, CategoryOrm(id=4, ru="human", en="human", fr="human", image='human.jpg'), "Category human")
+            await db_add_record(session, CategoryOrm(id=5, ru="activity", en="activity", fr="activity", image='activity.jpg'), "Category activity")
+            await db_add_record(session, CategoryOrm(id=6, ru="dress", en="dress", fr="dress", image='dress.jpg'), "Category dress")
+            await db_add_record(session, CategoryOrm(id=7, ru="home", en="home", fr="home", image='home.jpg'), "Category home")
+            await db_add_record(session, CategoryOrm(id=8, ru="technics", en="technics", fr="technics", image='technics.jpg'), "Category technics")
+            await db_add_record(session, CategoryOrm(id=9, ru="transport", en="transport", fr="transport", image='transport.jpg'), "Category transport")
+            await db_add_record(session, CategoryOrm(id=10, ru="geography", en="geography", fr="geography", image='geography.jpg'), "Category geography")
+            await db_add_record(session, CategoryOrm(id=11, ru="culture", en="culture", fr="culture", image='culture.jpg'), "Category culture")
+            await db_add_record(session, CategoryOrm(id=12, ru="concepts", en="concepts", fr="concepts", image='concepts.jpg'), "Category concepts")
+            await db_add_record(session, CategoryOrm(id=13, ru="others", en="others", fr="others", image='others.jpg'), "Category others")  
+
+        if dataInfo.clear == "Y":
+            try:
+                logger.info(f"Удаляем все слова языка {dataInfo.lang}")
+                select_word_query = text("DELETE FROM words WHERE language = :lang")
+                await session.execute(select_word_query, {"lang": dataInfo.lang})
+                await session.commit()
+                logger.info(f"Все слова языка {dataInfo.lang} удалены!")
+            except:   
+                await session.rollback() 
+                logger.error(f"Ошибка удаления из таблицы words слов языка {dataInfo.lang}")
+
         await fill_words_list(dataInfo.filename, dataInfo.lang, request.app.state.embedder, session)
     response = RedirectResponse(url="/game/home/", status_code=303)    
     return response
@@ -206,6 +237,14 @@ async def delete_the_user(userName: str, session: SessionDep, request: Request, 
         if await delete_user(userName, session):
             return {"result": "DELETED"}
     return {"result": "FAULT"}
+
+
+@app.post("/words/categories",  tags=["Game", "categories"], summary="Add categories")
+async def add_categories_handler(session: SessionDep, request: Request, current_user: UserInfo = Depends(get_current_user)):
+    if current_user.username == "admin":
+        await add_categories(session, request.app.state.embedder)
+    response = RedirectResponse(url="/game/home/", status_code=303)    
+    return response
 
 
 @app.post("/words/unload",  tags=["Game", "word list, unload"], summary="Unload the word list")
@@ -377,7 +416,8 @@ async def join_the_game(request: Request, session: SessionDep, current_user: Use
             "total_attempts": game_stats.total_attempts,
             "started": game_stats.started,
             "seconds_left": remaining_time,
-            "language": game_stats.language
+            "language": game_stats.language,
+            "image": game_stats.image
         } 
     else:
         return {"status": "waiting", "message": get_err_message("game_beginning", "he new game is about to start...", current_user.lang), "reason": player_data["reason"]}

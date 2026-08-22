@@ -27,3 +27,5 @@ package.json
 # windtails
 node_modules/
 src/
+
+make_categories.py
