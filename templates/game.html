@@ -533,7 +533,7 @@
                             endGame(true, `{{Congratulations}} "${data.word}"! 🎯 🎉`);
                         }
 
-                        if (attempts > 4) {
+                        if ((attempts > 4) && (!data.is_correct)) {
                             let hints_level = attempts // 5
                             helpBtn.disabled = false;
                             helpBtn.className = "text-sm font-semibold border border-blue-300 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition";
@@ -835,13 +835,13 @@
                     confetti.reset();
                 }            
                 confetti({
-                    particleCount: 120,          
+                    particleCount: 130,          
                     angle: 60,                  
                     spread: 70,                 
                     origin: { x: 0.1, y: 0.8 }  
                 });        
                 confetti({
-                    particleCount: 120,          
+                    particleCount: 130,          
                     angle: 120,                  
                     spread: 70,                 
                     origin: { x: 0.9, y: 0.8 }  
@@ -984,7 +984,7 @@
                     spread: 70,                 
                     origin: { x: 0.1, y: 0.8 }  
                 });
-        });
+        }); 
 
         winnerCup.addEventListener('animationend', (event) => {
             // Проверяем, что закончилась именно анимация исчезновения, а не покачивания!
@@ -1100,6 +1100,7 @@
         function ufoAnimationend() {
             ufo.classList.remove('fly');
         }
+
 
         if (window.innerWidth < 768) {
             console.log('Show_radar disabled - window.innerWidth = '+window.innerWidth);

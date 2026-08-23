@@ -694,6 +694,7 @@ body.dark-theme .sun {
    left: 0;
    width: 100vw; /* Растягиваем на 100% ширины экрана */
    height: 100vh; /* Растягиваем на 100% высоты экрана */
+  pointer-events: none;
    background: radial-gradient(circle, rgba(255,255,255,1) 30%, rgba(255,255,255,0) 40%);
    border-radius: 50%;   
    z-index: 999;
