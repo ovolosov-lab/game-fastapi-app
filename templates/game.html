@@ -30,6 +30,11 @@
             </button>
             <h2 class="text-lg font-semibold mb-3 text-blue-600">{{game_stats}}</h2>
             <div id="stats-grid" class="h-[202px] border rounded-2xl p-2.5 flex flex-row justify-between mb-6 gap-6"></div>
+            <div id="winners" class="leaderboard-grid">
+                <div class="grid-cell"><img src="/static/img/winner.svg" class="wreath-img"><span id="winner_1" class="username"> </span></div>
+                <div class="grid-cell"><img src="/static/img/winner.svg" class="wreath-img"><span id="winner_2" class="username"> </span></div>
+                <div class="grid-cell"><img src="/static/img/winner.svg" class="wreath-img"><span id="winner_3" class="username"> </span></div>
+            </div>
         </div>
 
         <!-- RUNNING GAME BLOCK ("hidden" on default) -->
@@ -765,6 +770,7 @@
                     
                     if (data.players) {
                         console.log(data.players);
+                        let cnt = 1;
                         data.players.forEach(pl => {
                             let stella = "";
                             if (pl.last_winner > 0) {
@@ -776,6 +782,12 @@
                             playersScores += `<li class="flex items-center justify-between"><div class="flex items-center gap-2 truncate">
                                           <span class="h-2 w-2 flex-shrink-0 rounded-full bg-emerald-300 ml-2"></span>
                                           <span class="truncate">${pl.username} ${stella}</span></div><b class="pl-2.5 pr-3" style="color:#40dacc">${pl.rate}</b></li>`;
+                            if (cnt < 4) {
+                                if (pl.rate > 0) {
+                                    document.getElementById('winner_'+cnt).innerText = pl.username;    
+                                }
+                                cnt++;
+                            }              
                         });
                     }    
                     playersScores += `</ul></div>`;

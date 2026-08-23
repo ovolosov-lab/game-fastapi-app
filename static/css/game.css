@@ -101,6 +101,53 @@ body.dark-theme #guess-form button:hover {
     background-color:#0a0d1d;
 } 
 
+.leaderboard-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 124px); 
+  gap: 10%;
+  min-width:100%;
+  justify-content: center;
+}
+
+.grid-cell {
+  display: grid;
+  width: 124px;
+  height: 124px;
+}
+
+.wreath-img, 
+.username {
+  grid-area: 1 / 1; /* Оба элемента занимают первую строку и колонку внутри grid-cell */
+}
+
+.wreath-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background-color:white;
+  border-radius:50%;
+  padding:2px;  
+}
+
+.username {
+  justify-self: center; 
+  align-self: center;  
+  z-index: 2;           
+  margin: 0;          
+
+  max-width: 100px;         
+  white-space: nowrap;     
+  overflow: hidden;          
+  text-overflow: ellipsis;  
+  
+  /* Эстетические стили (опционально) */
+  font-weight: 600;
+  background-color:white;
+  border-radius:50%;  
+  padding:5px;
+  padding-right:5px;
+  color:#014bd4; 
+}
 
 #start-btn { margin-bottom: 15px; cursor:pointer; }
 #timer-container { padding-left: 8px; }
@@ -232,6 +279,28 @@ body.dark-theme #guess-form button:hover {
         white-space: normal !important; /* Отменяет text-wrap:nowrap */
     }
 
+    .leaderboard-grid {
+    grid-template-columns: repeat(3, 100px); 
+    gap: 10px;
+    }
+
+    .grid-cell {
+        width: 100px;
+        height: 100px;
+    }
+
+    .username {
+    max-width: 90px;         
+    padding-left:2px;
+    padding-right:2px;
+    font-size:0.9rem; 
+    }
+    .theme-toggle { 
+        margin-bottom:10px;
+    }
+    #game-footer {
+        max-height: 40px;
+    }    
 }
 
 b {color: rgb(21, 93, 252); }
