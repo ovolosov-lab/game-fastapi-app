@@ -22,7 +22,7 @@ from rapidfuzz import fuzz
 from collections import Counter
 
 from config import BASE_DIR, ERROR_MESSAGES_EN, ERROR_MESSAGES_RU, MODEL_PATH, settings, logger
-from database import SessionDep, add_categories, check_the_game_duration, check_the_player_involved, check_user, create_new_game, db_add_record, delete_user, engine, create_all_tables, db_connection_check, fill_hints_cache, join_the_player, manage_hint, get_players_stats, get_the_game_statistic, user_exists, the_game_state_update, new_session
+from database import SessionDep, fix_category, check_the_game_duration, check_the_player_involved, check_user, create_new_game, db_add_record, delete_user, engine, create_all_tables, db_connection_check, fill_hints_cache, join_the_player, manage_hint, get_players_stats, get_the_game_statistic, user_exists, the_game_state_update, new_session
 from lang import detect_language
 from models import CategoryOrm
 from schemas import GuessRequest, GuessResponse, HintCache, NewUser, User, UserInfo, WordsDataInfo
@@ -201,7 +201,7 @@ async def initial_fill_words_list(dataInfo: WordsDataInfo, session: SessionDep, 
         row = result.first()
         if row and row.cnt == 0:
             logger.info("Создаем список категорий")
-            await db_add_record(session, CategoryOrm(id=1, ru="animals", en='animals', fr="animals", image='animqals.jpg'), "Category animals")
+            await db_add_record(session, CategoryOrm(id=1, ru="animals", en='animals', fr="animals", image='animals.jpg'), "Category animals")
             await db_add_record(session, CategoryOrm(id=2, ru="plants", en="plants", fr="plants", image='plants.jpg'), "Category plants")
             await db_add_record(session, CategoryOrm(id=3, ru="meal", en="meal", fr="meal", image='meal.jpg'), "Category meal")
             await db_add_record(session, CategoryOrm(id=4, ru="human", en="human", fr="human", image='human.jpg'), "Category human")
@@ -242,7 +242,7 @@ async def delete_the_user(userName: str, session: SessionDep, request: Request, 
 @app.post("/words/categories",  tags=["Game", "categories"], summary="Add categories")
 async def add_categories_handler(session: SessionDep, request: Request, current_user: UserInfo = Depends(get_current_user)):
     if current_user.username == "admin":
-        await add_categories(session, request.app.state.embedder)
+        await fix_category(session)
     response = RedirectResponse(url="/game/home/", status_code=303)    
     return response
 
