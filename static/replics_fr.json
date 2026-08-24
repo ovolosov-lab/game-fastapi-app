@@ -59,6 +59,18 @@
     "Le contact avec une civilisation extraterrestre a été établi ! Vous avez prouvé que l'humanité est prête pour la communication interstellaire !",
     "Grâce à vous, l'ordinateur a réussi à déchiffrer le message extraterrestre ! Mais que signifiait exactement le nombre «42 » ?"
   ],
+  "dress": "Il semble que les aliens soient intéressés par les vêtements terriens. Peut-être devrions-nous leur proposer un plan de combinaison spatiale ?",
+  "animals": "Capitaine, ils veulent qu'on leur parle des animaux terriens !",
+  "plants": "Capitaine, ils veulent qu'on leur parle des plantes terriennes !",
+  "meal": "Capitaine, il semble que les aliens soient curieux de la nourriture terrienne !",
+  "culture": "Capitaine, ils veulent qu'on leur partage des informations sur la culture terrienne ! Littérature, musique, théâtres, films, peinture - que devrions-nous choisir ?",
+  "activity": "Capitaine, les aliens veulent qu'on leur parle des professions et loisirs terriens !",
+  "geography": "Capitaine, ils veulent qu'on leur parle de la géographie terrienne ! Continents, pays, villes, rivières, montagnes - que devrions-nous choisir ?",
+  "home": "Capitaine, ils nous ont envoyé des photos de leurs maisons. Il semble qu'ils soient intéressés par l'architecture terrienne !",
+  "technics": "Capitaine, ils veulent qu'on leur parle de la technologie terrienne ! Par où devrions-nous commencer ?",
+  "transport": "Capitaine, ils veulent qu'on leur parle du transport terrien ! Voitures, trains, avions, navires - que devrions-nous choisir ?",
+  "human": "Capitaine, ils veulent qu'on leur parle de tous les habitants de la Terre ! Devrions-nous commencer par des images ?",
+  "concepts": "Capitaine, ils veulent qu'on leur parle des concepts les plus généraux qui existent sur la Terre !",
   "help1":     "Le mot commence par la lettre '{hint}' !",
   "help2":     "La dernière lettre du mot est '{hint}' !",
   "help3":     "La deuxième lettre du mot est '{hint}' !"

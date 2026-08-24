@@ -59,6 +59,18 @@
     "Contact with the alien civilization has been established! You've proven that humanity is ready for interstellar communication!"
     ,"Computer successfully decrypted the alien message! But what did the number '42' really mean?"
   ],
+  "dress": "It seems the aliens are interested in Earthly clothing. Perhaps we should offer them a spacesuit blueprint?",
+  "animals": "Captain, they want us to tell them about Earth's animals!",
+  "plants": "Captain, they want us to tell them about Earth's plants!",
+  "meal": "Captain, it appears the aliens are curious about Earth's food!",
+  "culture": "Captain, they want us to share information about Earth's culture! Literature, music, theaters, movies, painting - what should we choose?",
+  "activity": "Captain, the aliens want us to tell them about Earth's professions and hobbies!",
+  "geography": "Captain, they want us to tell them about Earth's geography! Continents, countries, cities, rivers, mountains - what should we choose?",
+  "home": "Captain, they sent us photos of their homes. It seems they are interested in Earth's architecture!",
+  "technics": "Captain, they want us to tell them about Earth's technology! Where should we start?",
+  "transport": "Captain, they want us to tell them about Earth's transportation! Cars, trains, airplanes, ships - what should we choose?",
+  "human": "Captain, they want us to tell them everything about Earth's inhabitants! Should we start with images?",
+  "concepts": "Captain, they want us to tell them about the most general concepts that exist on Earth!",
   "help1": "The word begins with the letter '{hint}'!",
   "help2": "The last letter of the word is '{hint}'!",
   "help3": "The second letter of the word is '{hint}'!"

@@ -318,6 +318,7 @@
         let last_word = "";
         let have_replics = false;
         let ufoCnt = 0;
+        let category = "";
         const guesses = [];
 
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -420,6 +421,7 @@
                 
                     // Очищаем историю предыдущей игры, если она была
                     historyList.innerHTML = `<img src="/static/img/${data.image}" />`;
+                    category = data.image.replace(".jpg","");
                     historyList.style = "";
                     firstGuess = null;
                     secondGuess = null;
@@ -531,6 +533,15 @@
                         if (data.is_correct) {
                             last_word = data.word;
                             endGame(true, `{{Congratulations}} "${data.word}"! 🎯 🎉`);
+                        }
+
+                        if (attempts == 2) {
+                            if (have_replics && category){
+                                let mess = replics[category];
+                                if (mess) {
+                                    typeMessage(mess);
+                                }     
+                            }
                         }
 
                         if ((attempts > 4) && (!data.is_correct)) {
@@ -1054,9 +1065,7 @@
             const category = replics[status];
             let frase = "";
             if (category) {
-                console.log(replics);
                 const randomIndex = Math.floor(Math.random() * category.length);
-                console.log(category[randomIndex]);
                 frase = category[randomIndex];
             } else {
                 fill_replics();

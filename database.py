@@ -555,17 +555,6 @@ async def delete_user(userName: str, session: SessionDep) -> bool:
         return False
 
 
-async def fix_category(session: SessionDep):
-    try:
-        await session.execute(text("UPDATE categories SET image='animals.jpg' WHERE id=1"))  
-        await session.commit()
-        logger.success("Категория исправлена!")
-    except Exception as e:
-        await session.rollback()
-        logger.error(f"Ошибка разметки таблицы слов категориями")
-
-
-
 def predict_category(embedder: TextEmbedding, secret_word: str, language: str, category_centroids):
     if language == "ru":
         language = "en"

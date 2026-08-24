@@ -22,7 +22,7 @@ from rapidfuzz import fuzz
 from collections import Counter
 
 from config import BASE_DIR, ERROR_MESSAGES_EN, ERROR_MESSAGES_RU, MODEL_PATH, settings, logger
-from database import SessionDep, fix_category, check_the_game_duration, check_the_player_involved, check_user, create_new_game, db_add_record, delete_user, engine, create_all_tables, db_connection_check, fill_hints_cache, join_the_player, manage_hint, get_players_stats, get_the_game_statistic, user_exists, the_game_state_update, new_session
+from database import SessionDep, check_the_game_duration, check_the_player_involved, check_user, create_new_game, db_add_record, delete_user, engine, create_all_tables, db_connection_check, fill_hints_cache, join_the_player, manage_hint, get_players_stats, get_the_game_statistic, user_exists, the_game_state_update, new_session
 from lang import detect_language
 from models import CategoryOrm
 from schemas import GuessRequest, GuessResponse, HintCache, NewUser, User, UserInfo, WordsDataInfo
@@ -237,14 +237,6 @@ async def delete_the_user(userName: str, session: SessionDep, request: Request, 
         if await delete_user(userName, session):
             return {"result": "DELETED"}
     return {"result": "FAULT"}
-
-
-@app.post("/words/categories",  tags=["Game", "categories"], summary="Add categories")
-async def add_categories_handler(session: SessionDep, request: Request, current_user: UserInfo = Depends(get_current_user)):
-    if current_user.username == "admin":
-        await fix_category(session)
-    response = RedirectResponse(url="/game/home/", status_code=303)    
-    return response
 
 
 @app.post("/words/unload",  tags=["Game", "word list, unload"], summary="Unload the word list")
