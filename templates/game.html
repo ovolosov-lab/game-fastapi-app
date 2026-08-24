@@ -926,7 +926,7 @@
             
             // Вычисляем радиус (расстояние от центра в пикселях)
             const maxRadius = 240; 
-            const radius = maxRadius * (1 - (similarityPercent / 100));
+            let radius = maxRadius * (1 - (similarityPercent / 100));
 
             if (radius > 0.01 && radius < 6) { radius = radius + 5; }
             
