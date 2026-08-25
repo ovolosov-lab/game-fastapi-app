@@ -939,7 +939,7 @@
             const maxRadius = 240; 
             let radius = maxRadius * (1 - (similarityPercent / 100));
 
-            if (radius > 0.01 && radius < 6) { radius = radius + 5; }
+            if (radius > 0.04 && radius < 8) { radius = radius + 12; }
             
             // Выбираем случайный угол направления от 0 до 2*PI (в радианах)
             const angle = Math.random() * 2 * Math.PI;

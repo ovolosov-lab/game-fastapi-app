@@ -123,3 +123,29 @@ def save_file(content: str, filename: str, lang: str):
         f.write(content)
     logger.success(f"Выгрузка списка слов для языка '{lang}' завершена!")
 
+
+def predict_category(embedder: TextEmbedding, secret_word: str, language: str, category_centroids):
+    if language == "ru":
+        language = "en"
+    prompt = create_word_prompt(secret_word, language)   
+    # logger.info(f"Создан промпт для языка {language} : '{prompt}'")   
+    word_embedding = next(iter(embedder.embed([prompt])))  
+    # Нормализуем вектор слова
+    word_embedding = word_embedding / np.linalg.norm(word_embedding)
+    best_category = "13"
+    best_score = -1.0
+    
+    # Сравниваем с центроидами
+    for cat_name, centroid in category_centroids.items():
+        # Так как оба вектора нормализованы, их скалярное произведение (dot product)
+        # математически равно косинусному сходству (cos_sim)
+        score = np.dot(word_embedding, centroid)
+        
+        if score > best_score:
+            best_score = score
+            best_category = cat_name
+            
+    if best_score < 0.50:
+        return "13", best_score
+        
+    return best_category, best_score

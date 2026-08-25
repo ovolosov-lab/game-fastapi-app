@@ -80,7 +80,7 @@ This project is built using great open-source tools and models:
 *   **[paraphrase-multilingual-MiniLM-L12-v2](https://huggingface.co)** — A multilingual model from the `sentence-transformers` community, providing excellent semantic accuracy. 
                                                                            Distributed under the Apache 2.0 license.
 *   **[Hugging Face](https://huggingface.co)** — for hosting the model and providing infrastructure.
-*   Thanks to my wife for the image design and all the support.
+*   Thanks to my wife Helen for the image design and all the support.
 
 
 ## 📄 License
