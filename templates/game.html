@@ -319,6 +319,7 @@
         let have_replics = false;
         let ufoCnt = 0;
         let category = "";
+        let word_len = 1;
         const guesses = [];
 
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -411,6 +412,7 @@
                         hiddenWord.style.fontSize = '1.0rem';    
                     }  
                     let lang = data.language.replace('en', 'gb');    
+                    word_len = data.word_len;
                     hiddenWord.innerHTML = `{{need2guess1}} ${data.word_len}{{need2guess2}} <img src="/static/${lang}.png" width="16" height="12" alt="${lang.toUpperCase()}" style="display:inline">`;
 
                     startTimer(data.seconds_left);
@@ -596,21 +598,25 @@
                             let tmp_html = "{{No_hints_found}} 😔";    
 
                             if (data.first_letter != "") {
-                                tmp_html = `<p style='padding-bottom:10px;'>{{starts_with_hint}} <b style="color:magenta">${data.first_letter}</b><p>`;
+                                tmp_html = `<p style='padding-bottom:10px;'>{{starts_with_hint}} <b style="color:magenta">${data.first_letter.toUpperCase()}</b><p>`;
                                 
                                 if (have_replics){
                                     let fi_le_hlp = replics['help1'];
                                     replics['cold'].push(fi_le_hlp.replace("{hint}", data.first_letter.toUpperCase()))        
                                 }
+
+                                wordInput.value = data.first_letter.toLowerCase();
                             }
 
                             if (data.last_letter != "") {
-                                tmp_html += `<hr/><p style='padding:10px;'>{{ends_with_hint}} <b style="color:magenta">${data.last_letter}</b><p>`;
+                                tmp_html += `<hr/><p style='padding:10px;'>{{ends_with_hint}} <b style="color:magenta">${data.last_letter.toUpperCase()}</b><p>`;
                                 
                                 if (have_replics){
                                     let se_le_hlp = replics['help2'] ;                                   
                                     replics['cold'].push(se_le_hlp.replace("{hint}", data.last_letter.toUpperCase()))        
                                 }
+
+                                wordInput.value = data.first_letter.toLowerCase() + "_".repeat(word_len - 2) + data.last_letter.toLowerCase();
                             } 
 
                             if (data.analogues.length > 0) {
@@ -622,16 +628,19 @@
                             }     
 
                             if (data.second_letter != "") {
-                                tmp_html += `<hr/><p style='padding:10px;'>{{second_letter_hint}} <b style="color:magenta">${data.second_letter}</b><p>`;
+                                tmp_html += `<hr/><p style='padding:10px;'>{{second_letter_hint}} <b style="color:magenta">${data.second_letter.toUpperCase()}</b><p>`;
                                 
                                 if (have_replics){
                                     replics['cold'].push(replics['help3'].replace("{hint}", data.second_letter.toUpperCase()))        
                                 }
+
+                                wordInput.value = data.first_letter.toLowerCase() + data.second_letter.toLowerCase() + "_".repeat(word_len - 3) + data.last_letter.toLowerCase();
                             } 
 
                             if (data.anagram != "") {
                                 tmp_html += `<hr/><p style='padding:10px;'>{{anagram_hint}} <b style="color:magenta">${data.anagram}</b><p>`;
                                 typeMessage("{{vatson}}");    
+                                wordInput.value = data.anagram;
                             } 
 
                             if (data.ai != "") {
