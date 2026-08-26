@@ -462,7 +462,12 @@
                 startBtn.style.opacity = '1.0';
                 startBtn.disabled = false;
                 startBtn.innerText = '{{start}}';
-                fill_replics();
+                await fill_replics();
+                if (replics[category]) {
+                    addAttemptToUI(replics[category][1], -2, false);
+                } else {
+                    addAttemptToUI(`Категория: ${category}`, -2, false);
+                }
             }
         }
 
@@ -539,7 +544,7 @@
 
                         if (attempts == 2) {
                             if (have_replics && category){
-                                let mess = replics[category];
+                                let mess = replics[category][0];
                                 if (mess) {
                                     typeMessage(mess);
                                 }     
@@ -684,28 +689,37 @@
                 row.className += "bg-slate-100 border-slate-200 text-slate-600"; // Холодно
                 smile = "🥶";
                 state = 'warm';
-            } else {
+            } else if (score > -1) {
                 row.className += "bg-blue-100 border-blue-200 text-blue-600"; // Совсем Холодно
                 smile = "❄️";
+            } else {
+                row.className += "border-slate-100 text-slate-800 bg-amber-50"; // Start                
+                row.innerHTML = `<span class="font-medium pl-1 pr-1">${word}</span>`;
             }
-            if (((attempts % 4) == 0) || (state == 'win')) {
+
+            if ((attempts > 0) && (((attempts % 4) == 0) || (state == 'win'))) {
                 typeMessage(getRandomPhrase(state));
             }
-            row.innerHTML = `<span class="font-medium pl-1 pr-1">${word}</span> <span class="text-sm font-mono bg-white/60 px-2 py-0.5 rounded-md border border-black/5 attempts-span">${score}{{similarity}}  ${smile}</span>`;
 
-            historyList.insertBefore(row, historyList.firstChild);
+            if (score > -1) {
+                row.innerHTML = `<span class="font-medium pl-1 pr-1">${word}</span> <span class="text-sm font-mono bg-white/60 px-2 py-0.5 rounded-md border border-black/5 attempts-span">${score}{{similarity}}  ${smile}</span>`;
 
-            if (!firstGuess) {
-                firstGuess = row;
+                historyList.insertBefore(row, historyList.firstChild);
+
+                if (!firstGuess) {
+                    firstGuess = row;
+                } else {
+                    if ((firstGuess)&&(secondGuess)) {
+                        historyList.insertBefore(secondGuess, firstGuess);
+                        secondGuess = null;
+                    }
+                    if (score < 40) {
+                        secondGuess = row;
+                    }
+                } 
             } else {
-                if ((firstGuess)&&(secondGuess)) {
-                    historyList.insertBefore(secondGuess, firstGuess);
-                    secondGuess = null;
-                }
-                if (score < 40) {
-                    secondGuess = row;
-                }
-            }
+                historyList.firstChild.after(row);
+            }    
 
             historyList.scrollTo({top: 0, behavior: 'smooth'});
         }
@@ -1064,6 +1078,7 @@
                 if (data) {
                     Object.assign(replics, data);
                     have_replics = true;
+                    console.log(replics);
                 }
             } catch (error) {
                 console.error('Load replics ERROR: :', error);
@@ -1071,11 +1086,11 @@
         }
 
         function getRandomPhrase(status) {
-            const category = replics[status];
+            const categoryMsg = replics[status];
             let frase = "";
-            if (category) {
-                const randomIndex = Math.floor(Math.random() * category.length);
-                frase = category[randomIndex];
+            if (categoryMsg) {
+                const randomIndex = Math.floor(Math.random() * categoryMsg.length);
+                frase = categoryMsg[randomIndex];
             } else {
                 fill_replics();
             }
