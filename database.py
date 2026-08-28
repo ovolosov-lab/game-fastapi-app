@@ -2,16 +2,13 @@ import asyncio
 from datetime import datetime
 
 from fastapi import Depends, HTTPException, Request
-from fastembed import TextEmbedding
-import numpy as np
 from openai import AsyncOpenAI
 from sqlalchemy import URL, insert, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from typing import Annotated, Any, Dict, cast
+from typing import Annotated, cast
 # from llama_cpp import Llama
-from lang import create_word_prompt
-from models import Base, CategoryOrm, WordOrm
+from models import Base, WordOrm
 from schemas import HintCache, HintResponse
 from config import settings, logger
 
@@ -375,7 +372,7 @@ async def get_the_game_statistic(userid, session: SessionDep):
 
 
 async def check_the_game_duration(session_factory: async_sessionmaker, app_state):  
-    logger.info(f"Проверка игры на превышение {settings.game_duration}")
+    logger.info(f"Проверка игры на превышение отведенного времени {settings.game_duration}")
     found: bool = False   
     async with session_factory() as session:
         query = text("""
@@ -536,7 +533,7 @@ async def create_ai_description(word: str, language: str, app_state) -> str:
     if content is None:
         return "😔"
     else: 
-        return content.strip()
+        return content.strip().replace(word, "*" * len(word))
         
 
 
