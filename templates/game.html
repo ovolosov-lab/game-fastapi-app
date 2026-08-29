@@ -24,7 +24,7 @@
         
         <!-- WELCOME BLOCK (Экран старта и статистики) -->
         <div id="welcome-card" class="center-block bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <p class="text-sm text-slate-500 mb-4" style="white-space: pre-line;">{{program_description}}</p>            
+            <p class="text-sm text-slate-500 mb-4" style="white-space: pre-line;">{{program_description}}  <span style="padding-left:10px;"><label for="game-level"> {{game_level}} - </label><input type="checkbox" id="game-level" value="YES" checked disabled></span></p>            
             <button id="start-btn" class="w-full bg-blue-600 text-white font-medium py-3 rounded-xl hover:bg-deep-space transition shadow-sm">
                 {{start}}
             </button>
@@ -326,6 +326,7 @@
         const welcomeCard = document.getElementById('welcome-card');
         const gameCard = document.getElementById('game-card');
         const startBtn = document.getElementById('start-btn');
+        const gameLevel = document.getElementById('game-level');
         const startAgainBtn = document.getElementById('start-again-btn');
         const helpBtn = document.getElementById('help-btn');
         const guessForm = document.getElementById('guess-form');
@@ -387,6 +388,7 @@
                 const response = await fetch('/game/join/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ level: gameLevel.checked }),
                     credentials: 'include'
                 });
                 
@@ -437,7 +439,7 @@
                     helpBtn.className = "text-sm border border-blue-200 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent";
                     helpBtn.disabled = true;
 
-                    if (attempts > 4) {
+                    if (attempts > 0) {
                         helpBtn.disabled = false;
                         helpBtn.className = "text-sm font-semibold border border-blue-300 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition";
                     }
@@ -551,11 +553,11 @@
                             }
                         }
 
-                        if ((attempts > 4) && (!data.is_correct)) {
-                            let hints_level = attempts // 5
+                        if ((attempts > 0) && (!data.is_correct)) {
+                            let hints_level = attempts // 3
                             helpBtn.disabled = false;
                             helpBtn.className = "text-sm font-semibold border border-blue-300 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition";
-                            if ((attempts % 5) == 0) {
+                            if ((attempts % 3) == 0) {
                                 showToast("💡 {{placeholder1}}", "toast")
                             }
                         }
@@ -589,7 +591,7 @@
         
         async function open_hint_dlg() 
         {
-            if (attempts > 4) {
+            if (attempts > 0) {
                 try {
                     const response = await fetch(`/game/help/${currentGameId}`, {
                         method: 'GET',

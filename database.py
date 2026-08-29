@@ -395,16 +395,16 @@ async def manage_hint(gameid: int, userid: int, language:str, session: SessionDe
     row = res.first()
     if not row:
         return HintResponse(result="NO", first_letter="", second_letter="", last_letter="", analogues=[], anagram="", ai="")
-    if row.cnt < 5: 
+    if row.cnt < 1: 
         return HintResponse(result="NO", first_letter="", second_letter="", last_letter="", analogues=[], anagram="", ai="")
 
     attempts: int = row.cnt 
     hintResponse: HintResponse = get_hints_from_cache(request, attempts) 
 
-    if attempts > 4 and attempts < 26:
+    if attempts > 0 and attempts < 13:
         if attempts < 21 or len(hintResponse.analogues) > 1 or hintResponse.second_letter != "":
             sql = text("UPDATE players SET hints=:hints WHERE userid = :userid AND gameid = :gameid AND hints < :hints;")
-            level : int = attempts // 5 
+            level : int = attempts // 3 
             await session.execute(sql, {"userid": userid, "gameid": gameid, "hints": level})
             await session.commit() 
             logger.info(f"ํПользователем {userid} в игре {gameid} запрошено {level} подсказок")  
@@ -435,16 +435,16 @@ def get_hints_from_cache(request, level: int) -> HintResponse:
     hint_cache: HintCache = request.app.state.stored_hint 
     logger.info(hint_cache)
 
-    if level > 4:
+    if level > 0:
         first_letter = hint_cache.first_letter  
         logger.info(f"Первая подсказка '{first_letter}' получена из кэша")
         result = "YES"
     
-    if level > 9:
+    if level > 2:
         last_letter = hint_cache.last_letter
         logger.info(f"Вторая подсказка  '{last_letter}' получена из кэша")
 
-    if level > 14: 
+    if level > 5: 
         analogues = hint_cache.analogues
         logger.info(f"Третья подсказка {str(analogues)} получена из кэша")
         if hint_cache.size > 3 and len(analogues) < 1:   
@@ -452,14 +452,14 @@ def get_hints_from_cache(request, level: int) -> HintResponse:
         if len(analogues) < 1 and second_letter == "": 
             ai = hint_cache.ai
     
-    if level > 19:
+    if level > 8:
         if ai == "": 
             ai = hint_cache.ai
         else: 
             anagram = hint_cache.anagram
         logger.info(f"Четвертая подсказка '{ai}' получена из кэша")
 
-    if level > 24 and anagram == "":     
+    if level > 11 and anagram == "":     
         anagram = hint_cache.anagram
         logger.info(f"ПЯТАЯ подсказка '{ai}' получена из кэша")
 

@@ -72,5 +72,6 @@
     "player_earned2": "ps.", 
     "starting_game": "Créons un jeu", 
     "UFO": "OVNI détecté. Ne répond pas aux requêtes. En train de partir.",
-    "vatson": "Avec des indices comme ceux-ci, deviner le mot est élémentaire, Watson.!"
+    "vatson": "Avec des indices comme ceux-ci, deviner le mot est élémentaire, Watson.!",
+    "game_level": "Niveau facile"
 }
