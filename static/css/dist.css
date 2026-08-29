@@ -680,7 +680,10 @@
     padding-left: calc(var(--spacing) * 2.5);
   }
   .pl-4 {
-    padding-left: calc(var(--spacing) * 4);
+    padding-left: 30px;
+  }
+  .pr-4 {
+    padding-right: 30px;
   }
   .text-center {
     text-align: center;
