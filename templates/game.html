@@ -444,6 +444,8 @@
                         helpBtn.className = "text-sm font-semibold border border-blue-300 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition";
                     }
 
+                    wordInput.value = "";
+                    wordInput.placeholder = "{{enter_the_word}}";
                     wordInput.focus();
                 } else { 
                     console.log(`status = ${data.status}  message=${data.message}  seconds_left=${data.seconds_left}`);
@@ -622,8 +624,8 @@
                                     let se_le_hlp = replics['help2'] ;                                   
                                     replics['cold'].push(se_le_hlp.replace("{hint}", data.last_letter.toUpperCase()))        
                                 }
-
-                                wordInput.value = data.first_letter.toLowerCase() + "_".repeat(word_len - 2) + data.last_letter.toLowerCase();
+                                wordInput.value = "";
+                                wordInput.placeholder = data.first_letter.toLowerCase() + "_".repeat(word_len - 2) + data.last_letter.toLowerCase();
                             } 
 
                             if (data.analogues.length > 0) {
@@ -640,8 +642,8 @@
                                 if (have_replics){
                                     replics['cold'].push(replics['help3'].replace("{hint}", data.second_letter.toUpperCase()))        
                                 }
-
-                                wordInput.value = data.first_letter.toLowerCase() + data.second_letter.toLowerCase() + "_".repeat(word_len - 3) + data.last_letter.toLowerCase();
+                                wordInput.value = "";
+                                wordInput.placeholder = data.first_letter.toLowerCase() + data.second_letter.toLowerCase() + "_".repeat(word_len - 3) + data.last_letter.toLowerCase();
                             } 
 
                             if (data.anagram != "") {
@@ -671,7 +673,7 @@
         // Добавление строки в таблицу результатов
         function addAttemptToUI(word, score, isCorrect) {
             const row = document.createElement('div');
-            row.className = "flex justify-between items-center p-3 rounded-xl border transition shadow-sm ";
+            row.className = "flex justify-between items-center p-3 rounded-xl border transition shadow-sm text-lg pl-4 ";
 
             let smile = "🎯";
             let state = 'cold';
@@ -695,8 +697,8 @@
                 row.className += "bg-blue-100 border-blue-200 text-blue-600"; // Совсем Холодно
                 smile = "❄️";
             } else {
-                row.className += "border-slate-100 text-slate-800 bg-amber-50"; // Start                
-                row.innerHTML = `<span class="font-medium pl-1 pr-1">${word}</span>`;
+                row.className += "border-slate-100 text-slate-800 bg-amber-50 mt-1"; // Start                
+                row.innerHTML = `<span class="text-lg font-medium pl-1 pr-1">${word}</span>`;
             }
 
             if ((attempts > 0) && (((attempts % 4) == 0) || (state == 'win'))) {
@@ -720,7 +722,7 @@
                     }
                 } 
             } else {
-                historyList.firstChild.after(row);
+                historyList.firstChild.before(row);
             }    
 
             historyList.scrollTo({top: 0, behavior: 'smooth'});
