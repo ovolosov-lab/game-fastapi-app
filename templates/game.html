@@ -14,7 +14,7 @@
     <header id="game-header" class="bg-blue-600 text-white p-4 shadow-md">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-xl font-bold tracking-wide">{{program_banner}}</h1>
-            <span><span class="text-sm text-blue-600 bg-amber-50 px-3 py-1 rounded-full">{{username}}</span>
+            <span id="language-block" title="Change language"><span class="text-sm text-blue-600 bg-amber-50 px-3 py-1 rounded-full">{{username}}</span>
             <img src="/static/{{language}}.png" width="16" height="12" alt="{{language}}" style="display:inline; margin-left:10px;"></span>
         </div>
    </header>
@@ -302,7 +302,7 @@
     </div>    
 
     <script>
-        let currentGameId = null;
+        let currentGameId = 0;
         let isGameActive = false;
         let timerInterval = null;
         let radarInterval = null;
@@ -349,6 +349,7 @@
         const radar = document.getElementById('my-dynamic-content');
         const ufo = document.getElementById('ufo');
         const winnerCup = document.getElementById('winner-cup');
+        const langBlock = document.getElementById('language-block');
         const audio = new Audio('/static/victory.mp3');
         const replics = {};
 
@@ -1032,6 +1033,20 @@
                     winnerCup.classList.remove('active'); 
                     winnerCup.classList.add('hidden'); 
                 }, 8000); 
+            }
+        });
+
+        langBlock.addEventListener('click', (event) => {
+            if ((!isGameActive) && (currentGameId == 0)) {
+                let strLang = "en";
+                if (language == "ru") {
+                    strLang = "fr";
+                } else if ((language == "gb") || (language == "en")) {
+                    strLang = "ru";
+                }
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.set('language', strLang);
+                window.location.href = currentUrl.toString();
             }
         });
     

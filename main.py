@@ -2,7 +2,7 @@ import asyncio
 import json
 from urllib.parse import quote, unquote
 import os
-from typing import Annotated
+from typing import Annotated, Optional
 from fastembed import TextEmbedding
 # from llama_cpp import Llama
 import numpy as np
@@ -187,10 +187,13 @@ async def add_user(new_user: Annotated[NewUser, Form()], session: SessionDep) ->
 
 # Get the Game main page (a single-page application that receives all the data for a given application via asynchronous requests to the FastApi backend and updates the page dynamically without reloading) 
 @app.get("/game/home/", tags=["Game", "home page"], summary="Welcome to the Game home page")
-async def home_page(session: SessionDep, request: Request, current_user: UserInfo = Depends(get_current_user)):
-    i18n_data: dict = load_internationalization_data(current_user.lang)
-    player_data: dict = await check_the_player_involved(current_user.userid, 0, current_user.lang, session)
-    data = {"username": current_user.username, "joined_the_game": "True" if player_data["result"] == True else "False", "language": current_user.lang.replace("en","gb")}
+async def home_page(session: SessionDep, request: Request, current_user: UserInfo = Depends(get_current_user), language: Optional[str] = ""):
+    if language not in ("ru","en","fr"):
+        language = current_user.lang
+
+    i18n_data: dict = load_internationalization_data(language)
+    player_data: dict = await check_the_player_involved(current_user.userid, 0, language, session)
+    data = {"username": current_user.username, "joined_the_game": "True" if player_data["result"] == True else "False", "language": language.replace("en","gb")}
     return templates.TemplateResponse(request, "game.html", {"request": request, **data, **i18n_data})
 
 

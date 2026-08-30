@@ -73,7 +73,8 @@
     "starting_game": "Let's create a game", 
     "UFO": "UFO detected. Not responding to queries. Departing.",
     "vatson": "With hints like these, guessing the word is elementary, Watson!",
-    "game_level": "Easy level"
+    "game_level": "Easy level",
+    "themes": "Dark / Light themes"
 
      
 }

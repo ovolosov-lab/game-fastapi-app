@@ -81,6 +81,10 @@ body.dark-theme #you_won {
     min-width: 120px;     
 }
 
+#language-block {
+    cursor: pointer;
+}
+
 body.dark-theme #guess-form input {
     background-color: #0a0d1d;
     color: white;
@@ -551,7 +555,7 @@ b {color: rgb(21, 93, 252); }
   .panel-bar.accent-cyan { background-color: #3ca29b; border-radius: 0 0 8px 8px; height: 8px; }
 
   .panel-indicator {
-    color: #3ca29b; /* Цвет центральной точки радара */
+    color: #3ca29b; 
     font-size: 11px;
     padding: 0 12px;
     letter-spacing: 2px;
@@ -562,9 +566,10 @@ b {color: rgb(21, 93, 252); }
   .panel-body {
     display: flex;
     min-height: 80px;
-    border-left: 15px solid #123e3b; /* Толстая левая полоса терминала */
+    border-left: 15px solid #123e3b; 
     margin-bottom: 5px;
-    background-color: rgba(25, 34, 67, 0.2); /* Легкий фон */
+    background-color: rgba(25, 34, 67, 0.2); 
+    min-height: 110px;
   }
 
   /* Боковая панель с техническим текстом */
