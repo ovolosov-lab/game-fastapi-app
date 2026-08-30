@@ -837,6 +837,9 @@
     }
   }
   @media (hover: hover) {
+    .hover\:bg-blue-600:hover {
+      background-color: rgb(21, 93, 252);
+    }
     .hover\:bg-blue-50:hover {
       background-color: var(--color-blue-50);
     }

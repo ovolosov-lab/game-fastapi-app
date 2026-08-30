@@ -37,6 +37,7 @@ button {
   background-color: #ffffff;
 }
 
+
 #game_finished_header div {
     max-width: 400px;
 }
@@ -76,6 +77,10 @@ body.dark-theme #you_won {
     color: white;
 }
 
+#submit-guess-btn {
+    min-width: 120px;     
+}
+
 body.dark-theme #guess-form input {
     background-color: #0a0d1d;
     color: white;
@@ -93,6 +98,11 @@ body.dark-theme #help-btn {
   color: white;
   cursor: pointer;
 }
+
+#help-btn:hover {
+    color: white; 
+}
+#guess-form { gap: 12px; }
 
 body.dark-theme #help-btn:hover {
     background-color: #0a0d1d; 
@@ -155,6 +165,7 @@ body.dark-theme #guess-form button:hover {
 
 #stats-grid ul li { font-size:0.8rem; }
 #stats-grid ul li b { font-size:1.0rem; }
+#word-input { font-size:1.15rem; }
 #users-rates ul li span  { font-size:0.9rem; }
 #users-rates ul li b  { font-size:0.9rem; }
 #toast_message {cursor: pointer; }
@@ -239,7 +250,7 @@ body.dark-theme #guess-form button:hover {
     #game-card { padding-top: 15px !important; padding: 15px; }    
     #game_started_header { flex-direction: column; gap: 15px; }
     #hidden-word { font-size: 1.0rem; }
-    #guess-form { flex-direction: column; }
+    #guess-form { flex-direction: column; gap:0;}
     #word-input {
         width: 100%;
         margin-bottom: 10px;
@@ -628,8 +639,8 @@ b {color: rgb(21, 93, 252); }
   /* background: none; */
   border: 1px solid #6c73c4;
   cursor: pointer;
-  /* padding: 8px; */
-  color: #333;   /* Цвет иконок в светлой теме */
+  color: #333;   
+  box-shadow: 0 4px 6px rgb(65 97 158 / 90%);
 }
 
 /* По умолчанию (светлая тема) скрываем солнце */

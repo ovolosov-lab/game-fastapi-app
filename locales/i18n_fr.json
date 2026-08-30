@@ -22,7 +22,7 @@
     "start": "Lancer la partie 🚀",
     "light_dark_title": "Thème Clair / Sombre",
     "try_guess": "Proposez des mots pour deviner par association.",
-    "get_hint": "Obtenir un indice 🏳️",
+    "get_hint": "Obtenir un indice",
     "achieved_success": "Vous avez gagné cette partie !",
     "new_announced": "Une nouvelle partie vient de commencer.",
     "play_again": "Rejouer 🚀",
@@ -73,5 +73,6 @@
     "starting_game": "Créons un jeu", 
     "UFO": "OVNI détecté. Ne répond pas aux requêtes. En train de partir.",
     "vatson": "Avec des indices comme ceux-ci, deviner le mot est élémentaire, Watson.!",
-    "game_level": "Niveau facile"
+    "game_level": "Niveau facile",
+    "themes": "Thèmes Sombre / Clair"
 }

@@ -51,8 +51,8 @@
                         <span id="game-timer">02:00:00</span>
                     </div>
         
-                    <button id="help-btn" class="text-sm border border-blue-200 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent">
-                        {{get_hint}}
+                    <button id="help-btn" class="text-sm border border-blue-200 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent">
+                        {{get_hint}} 🆘
                     </button>
                 </div>
             </div>
@@ -75,7 +75,7 @@
             <div id="game-status-msg" class="mb-4 p-3 rounded-xl text-center font-medium hidden"></div>
 
             <!-- Форма отправки догадки -->
-            <form id="guess-form" class="flex space-x-2 mb-6">
+            <form id="guess-form" class="flex justify-between mb-6">
                 <input type="text" id="word-input" placeholder="{{enter_the_word}}" 
                        class="flex-grow border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
                 <button type="submit" id="submit-guess-btn" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-deep-space transition">
@@ -150,7 +150,7 @@
     <!-- Подвал страницы -->
     <footer id="game-footer" class="grid grid-cols-3 items-center text-xs text-slate-400 p-4 border-t border-slate-200 bg-white">
         <div>
-        <button id="light_dark" class="theme-toggle" onclick="dark_light()">
+        <button id="light_dark" class="theme-toggle" onclick="dark_light()" title="Dark / Light themes">
             <!-- the Moon (show in light theme) -->
             <svg class="moon" xmlns="http://w3.org" width="14" height="14" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -436,12 +436,12 @@
                     document.getElementById('timer-block').classList.replace('text-red-600', 'text-blue-600');
                     document.getElementById('timer-block').classList.replace('bg-red-50', 'bg-amber-50');
                     document.getElementById('timer-block').classList.remove('timer-urgent');
-                    helpBtn.className = "text-sm border border-blue-200 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent";
+                    helpBtn.className = "text-sm border border-blue-200 text-gray-600 px-3 py-1.5 rounded-lg hover:bg-blue-600 transition  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent";
                     helpBtn.disabled = true;
 
                     if (attempts > 0) {
                         helpBtn.disabled = false;
-                        helpBtn.className = "text-sm font-semibold border border-blue-300 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition";
+                        helpBtn.className = "text-sm font-semibold border border-blue-300 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-600 transition";
                     }
 
                     wordInput.value = "";
@@ -558,7 +558,7 @@
                         if ((attempts > 0) && (!data.is_correct)) {
                             let hints_level = attempts // 3
                             helpBtn.disabled = false;
-                            helpBtn.className = "text-sm font-semibold border border-blue-300 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition";
+                            helpBtn.className = "text-sm font-semibold border border-blue-300 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-600 transition";
                             if ((attempts % 3) == 0) {
                                 showToast("💡 {{placeholder1}}", "toast")
                             }

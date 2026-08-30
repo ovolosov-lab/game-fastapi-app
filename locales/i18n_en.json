@@ -17,7 +17,7 @@
     "switch_label": "Scroll down",
     "app_name": "Guess the word",
     "program_banner": "🧠 Guess the word",
-    "program_description": "To win this game, you must guess the hidden word. You can enter it in English, French, or Russian and use hints. The game ends as soon as one participant guesses the word or after one hour. A new game begins immediately with a new hidden word.",
+    "program_description": "To win this game, you must guess the hidden word. You can enter text in English, French or Russian and use hints (the first one will be available after the first move). The game ends as soon as one participant guesses the word or after one hour. A new game begins immediately with a new hidden word.",
     "game_stats": "Current game statistics", 
     "start": "Start the game 🚀",
     "light_dark": "Light / Dark theme",
