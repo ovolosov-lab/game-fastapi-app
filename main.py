@@ -8,21 +8,21 @@ from fastembed import TextEmbedding
 import numpy as np
 from sqlalchemy.sql import func
 from contextlib import asynccontextmanager
-import urllib.parse
 import uvicorn
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import text
-from fastapi import Cookie, FastAPI, Form, Depends, HTTPException, Query, Request
+from fastapi import BackgroundTasks, Cookie, FastAPI, Form, Depends, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from openai import AsyncOpenAI
 from rapidfuzz import fuzz
 from collections import Counter
 
-from config import BASE_DIR, ERROR_MESSAGES_EN, ERROR_MESSAGES_RU, MODEL_PATH, settings, logger
-from database import SessionDep, check_the_game_duration, check_the_player_involved, check_user, create_new_game, db_add_record, delete_user, engine, create_all_tables, db_connection_check, fill_hints_cache, join_the_player, manage_hint, get_players_stats, get_the_game_statistic, user_exists, the_game_state_update, new_session
+from config import BASE_DIR, ERROR_MESSAGES_EN, ERROR_MESSAGES_RU, settings, logger
+from database import *
+from game import Game
 from lang import detect_language
 from models import CategoryOrm
 from schemas import GuessRequest, GuessResponse, HintCache, NewUser, User, UserInfo, WordsDataInfo
@@ -45,6 +45,7 @@ async def lifespan(app: FastAPI):
     app.state.process_lock = asyncio.Lock()
     app.state.stored_hint = HintCache(result="NO", word="", first_letter="", second_letter="", last_letter="", analogues=[], ai="", anagram="", gameid=0, size=0)    
     app.state.language = settings.language 
+    app.state.game = Game()
 
     logger.info("Загрузка ML моделей...")
     app.state.embedder = TextEmbedding(
@@ -192,14 +193,13 @@ async def home_page(session: SessionDep, request: Request, current_user: UserInf
         language = current_user.lang
 
     i18n_data: dict = load_internationalization_data(language)
-    player_data: dict = await check_the_player_involved(current_user.userid, 0, language, session)
-    data = {"username": current_user.username, "joined_the_game": "True" if player_data["result"] == True else "False", "language": language.replace("en","gb")}
+    data = {"username": current_user.username, "joined_the_game": "True" if request.app.state.game.playerExists(current_user.userid) else "False", "language": language.replace("en","gb")}
     return templates.TemplateResponse(request, "game.html", {"request": request, **data, **i18n_data})
 
 
 @app.post("/words/add",  tags=["Game", "word list"], summary="Initial formation of the word list")
 async def initial_fill_words_list(dataInfo: WordsDataInfo, session: SessionDep, request: Request, current_user: UserInfo = Depends(get_current_user)) -> RedirectResponse:
-    if current_user.username == "admin":
+    if current_user.username == "admin" and dataInfo.lang in ("en","fr","ru"):
         result = await session.execute(text("SELECT COUNT(*) AS cnt FROM categories")) 
         row = result.first()
         if row and row.cnt == 0:
@@ -221,8 +221,8 @@ async def initial_fill_words_list(dataInfo: WordsDataInfo, session: SessionDep, 
         if dataInfo.clear == "Y":
             try:
                 logger.info(f"Удаляем все слова языка {dataInfo.lang}")
-                select_word_query = text("DELETE FROM words WHERE language = :lang")
-                await session.execute(select_word_query, {"lang": dataInfo.lang})
+                delete_word_query = text("DELETE FROM words WHERE language = :lang")
+                await session.execute(delete_word_query, {"lang": dataInfo.lang})
                 await session.commit()
                 logger.info(f"Все слова языка {dataInfo.lang} удалены!")
             except:   
@@ -264,7 +264,7 @@ async def make_guess(
     is_correct:bool = False
     attempts:int = 0
 
-    player_data:dict = await check_the_player_involved(current_user.userid, payload.gameid, current_user.lang, session)
+    player_data:dict = check_the_player_involved(current_user.userid, payload.gameid, request.app.state.game)
     if player_data["result"]:
         # Кодируем guessed word игрока
         guessing_lang: str = detect_language(payload.word)
@@ -331,7 +331,7 @@ async def make_guess(
                 similarity_percent = 100
 
         # Обновляем состояние игры
-        await the_game_state_update(current_user.userid, game_data.game_id, player_data["player_id"], payload.word, game_data.secret_word, similarity_percent, session)
+        await the_game_state_update(current_user.userid, game_data.game_id, payload.word, game_data.secret_word, similarity_percent, session, request.app.state.game)
 
         attempts = player_data["attempts"] + 1
 
@@ -341,36 +341,32 @@ async def make_guess(
 
 
 @app.get("/game/stats/", tags=["Game", "game session", "stats"], summary="Data for the current game statistic")
-async def get_game_status(session: SessionDep, current_user: UserInfo = Depends(get_current_user)):
+async def get_game_status(request: Request, session: SessionDep, current_user: UserInfo = Depends(get_current_user)):
     status:str = "active"
     participants:int = 0
     total_attempts:int = 0
     remaining_time:int = 0
     secret_word:str = ""
-    game_stats = await get_the_game_statistic(0, session)
+    game: Game = request.app.state.game
+    # game_stats = await get_the_game_statistic(0, session)
     players_rates = await get_players_stats(session)
     
+    game_id = game.id
+    secret_word = game.lastWord
     
-    if not game_stats:
+    if game.isFinished():
         status = "waiting" 
-        game_id = 0
+
     else:
-        game_id = game_stats.game_id
-        participants = game_stats.total_participants
-        total_attempts = game_stats.total_attempts
-        secret_word = game_stats.last_word
-
-        if game_stats.win:
-            status = "finished"
-            remaining_time = 0
-        else:     
-            remaining_time = settings.game_duration - game_stats.seconds_passed
-            
-        logger.info(f"{settings.game_duration} remaining game time (sec) = {remaining_time}")
-
+        participants = game.participants()
+        total_attempts = game.totalAttempts()
+        secret_word = game.lastWord
+        remaining_time = game.getTimeLeft()
         if remaining_time < 0:
             status = "waiting" 
             remaining_time = 0   
+            
+    logger.info(f"General games statistic: game_id={game_id}, remaining game time (sec) = {remaining_time}")
     
     return {
         "status": status,
@@ -385,43 +381,42 @@ async def get_game_status(session: SessionDep, current_user: UserInfo = Depends(
 
 
 @app.post("/game/join/", tags=["Game", "game session", "join"], summary="Join the game")
-async def join_the_game(request: Request, session: SessionDep, current_user: UserInfo = Depends(get_current_user)):
-    player_data:dict = await join_the_player(current_user.userid, current_user.lang, session)
+async def join_the_game(request: Request, background_tasks: BackgroundTasks, session: SessionDep, current_user: UserInfo = Depends(get_current_user)):
+    player_data:dict = await join_the_player(request.app.state.game, current_user.userid, current_user.lang, session)
     if player_data["result"]:
-        game_stats = await get_the_game_statistic(current_user.userid, session)
-        
-        if not game_stats:
+        game: Game = request.app.state.game
+        # game_stats = await get_the_game_statistic(current_user.userid, session)        
+        if game.id == 0:
             return {"status": "waiting", "message": get_err_message("game_beginning", "New game is about to start...", current_user.lang)}
         
-        remaining_time = settings.game_duration - game_stats.seconds_passed 
-            
-        logger.info(f"{settings.game_duration} remaining game time (sec) = {remaining_time}")
-
+        remaining_time = game.getTimeLeft() 
         if remaining_time < 11: 
             return {"status": "waiting", "game_id": 0, "message": get_err_message("game_beginning", "New game is about to start...", current_user.lang) }
+            
+        logger.info(f"user {current_user.userid} joining the game {game.id}, remaining game time (sec) = {remaining_time}")
 
-        if request.app.state.stored_hint.result == "NO" or request.app.state.stored_hint.gameid != game_stats.game_id:
-            await fill_hints_cache(game_stats.game_id, game_stats.secret_word, session, request.app.state)
+        if request.app.state.stored_hint.result == "NO" or request.app.state.stored_hint.gameid != game.id:
+            background_tasks.add_task(fill_hints_cache, game.id, game.currWord, request.app.state, new_session)
+            # await fill_hints_cache(game.id, game.currWord, session, request.app.state)
 
         return {
             "status": "active",
-            "game_id": game_stats.game_id,
-            "word_len": game_stats.word_len,
-            "participants": game_stats.total_participants,
-            "total_attempts": game_stats.total_attempts,
-            "started": game_stats.started,
+            "game_id": game.id,
+            "word_len": game.word_len,
+            "participants": game.participants(),
+            "total_attempts": game.getUserAttempts(current_user.userid),
+            "started": game.startTime.strftime("%d-%m-%Y %H:%M:%S"),
             "seconds_left": remaining_time,
-            "language": game_stats.language,
-            "image": game_stats.image
+            "language": game.language,
+            "image": game.image
         } 
     else:
         return {"status": "waiting", "message": get_err_message("game_beginning", "he new game is about to start...", current_user.lang), "reason": player_data["reason"]}
 
 
-
 @app.get("/game/help/{game_id}", tags=["Game", "game session, hinsts", "hint"], summary="Get the Hint")
 async def get_the_help(request: Request, game_id: int, session: SessionDep, current_user: UserInfo = Depends(get_current_user)):  
-    return await manage_hint(game_id, current_user.userid, current_user.lang, session, request)     
+    return manage_hint(game_id, current_user.userid, request)     
 
 
 @app.exception_handler(HTTPException)

@@ -547,7 +547,7 @@
                             endGame(true, `{{Congratulations}} "${data.word}"! 🎯 🎉`);
                         }
 
-                        if (attempts == 2) {
+                        if ((isGameActive) && (attempts == 2)) {
                             if (have_replics && category){
                                 let mess = replics[category][0];
                                 if (mess) {
@@ -560,7 +560,7 @@
                             let hints_level = attempts // 3
                             helpBtn.disabled = false;
                             helpBtn.className = "text-sm font-semibold border border-blue-300 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-600 transition";
-                            if ((attempts % 3) == 0) {
+                            if ((attempts == 1) || ((attempts % 3) == 0)) {
                                 showToast("💡 {{placeholder1}}", "toast")
                             }
                         }

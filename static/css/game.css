@@ -219,6 +219,7 @@ body.dark-theme #guess-form button:hover {
         overflow: hidden;
         max-height: 150px;
         min-height:150px;
+        margin-top: -50px 20px 20px 0;
     }
     .right-block {
         max-height: calc(100vh - 120px);

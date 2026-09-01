@@ -26,14 +26,21 @@ class AsyncPeriodicTask:
         self.task_func: Callable = task_func
         self._task: asyncio.Task | None = None
         self._is_running: bool = False  # флаг - запущена-ли задача
+        self.olready_does: bool = False # ни один экземпляр функции пока не вызыван и не работает 
 
     async def _run(self):
         while self._is_running:
             try:
-                await self.task_func()
+                if not self.olready_does:
+                    self.olready_does = True
+                    await self.task_func()
+                    self.olready_does = False
+                else:
+                    logger.warning(f"Запуск задачи пропущен, т.к. один экзепляр все еще работает!")
             except Exception as e:
                 logger.error(f"Error in background task: {e}")
-            await asyncio.sleep(self.interval)          # спим заданный интервал до след. запуска задачи
+                self.olready_does = False
+            await asyncio.sleep(self.interval)   # спим заданный интервал до след. запуска задачи
 
     def start(self):
         if not self._is_running:
