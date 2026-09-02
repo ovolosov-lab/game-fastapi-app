@@ -294,8 +294,9 @@ async def create_new_game(session_factory: async_sessionmaker, app_state, force:
     ret_result: bool = False 
     language: str = settings.language
     app_state.language = language
+    game: Game = app_state.game 
     game_lock = app_state.process_lock
-    new_game_id:int|None = None
+
     async with game_lock:       
         async with session_factory() as session: 
             try:
@@ -303,7 +304,7 @@ async def create_new_game(session_factory: async_sessionmaker, app_state, force:
                 # Выбираем случайное слово 
                 select_word_query = text("""
                     SELECT w.id, w.word, (SELECT c.image FROM categories c WHERE c.id=w.cat_id LIMIT 1) AS image FROM words w
-                    WHERE (w.language = :lang) AND (w.id NOT IN (SELECT g.secret_word_id FROM games g ORDER BY g.id DESC LIMIT 10)) AND (LENGTH(w.word) < :max_len) AND (LENGTH(w.word) > :min_len)
+                    WHERE (w.language = :lang) AND (w.id NOT IN (SELECT g.secret_word_id FROM games g ORDER BY g.id DESC LIMIT 8)) AND (LENGTH(w.word) < :max_len) AND (LENGTH(w.word) > :min_len)
                     ORDER BY random() LIMIT 1
                 """)
                 word_res = await session.execute(select_word_query, {"lang": language, "max_len": settings.max_word_len, "min_len": (3 if language == 'ru' else 2)})
@@ -329,16 +330,23 @@ async def create_new_game(session_factory: async_sessionmaker, app_state, force:
                     # Фиксируем НОВУЮ игру в таблице games
                     insert_game_query = text("INSERT INTO games (secret_word_id, language) VALUES (:word_id, :lang)  RETURNING id")
                     result = await session.execute(insert_game_query, {"word_id": word_data.id, "lang": language})
-                    new_game_id = result.scalar()
-                    app_state.game.start(new_game_id, word_data.word, language, word_data.image)
-                await session.commit() 
+                    new_game_id: int = result.scalar()
 
-                if new_game_id:
-                    logger.success(f"ํНовая игра {new_game_id} создана!")        
+                    game.start(new_game_id, word_data.word, language, word_data.image)
+                    logger.success(f"ํНовая игра {new_game_id} создана!")  
                     ret_result = True
-                else:
+                    
+                    if game.lastWord == "":
+                        select = text("SELECT w.word AS last_word FROM words w INNER JOIN games g ON w.id=g.secret_word_id WHERE g.id < :new_game_id ORDER BY g.id DESC LIMIT 1")
+                        word_res = await session.execute(select, {"new_game_id": new_game_id})
+                        word_data = word_res.fetchone()
+                        if word_data:
+                            game.lastWord = word_data.last_word
+                else:     
                     logger.warning(f"Нельзя завершить игру {old_game_id}, которая только-что началась!")
                     ret_result = False
+
+                await session.commit() 
             except Exception as e:
                 await session.rollback() 
                 logger.exception("Ошибка при создании новой игры!")

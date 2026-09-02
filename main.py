@@ -347,21 +347,18 @@ async def get_game_status(request: Request, session: SessionDep, current_user: U
     participants:int = 0
     total_attempts:int = 0
     remaining_time:int = 0
-    secret_word:str = ""
     game: Game = request.app.state.game
     # game_stats = await get_the_game_statistic(0, session)
     players_rates = await get_players_stats(session)
     
     game_id = game.id
-    secret_word = game.lastWord
+    secret_word: str = game.lastWord
     
     if game.isFinished():
         status = "waiting" 
-
     else:
         participants = game.participants()
         total_attempts = game.totalAttempts()
-        secret_word = game.lastWord
         remaining_time = game.getTimeLeft()
         if remaining_time < 0:
             status = "waiting" 
