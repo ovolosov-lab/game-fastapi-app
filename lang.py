@@ -16,16 +16,8 @@ def detect_language(single_word: str) -> str:
 
 
 def create_word_prompt(single_word: str, detected_lang: str) -> str:
-    if any(c in 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя' for c in single_word):
-        detected_lang = "ru"
-    else:
-        # 2. Если латиница — выбираем между en и fr
-        try:
-            lang = detect(single_word)
-            if lang in ["en", "fr"]:
-                detected_lang = lang
-        except LangDetectException:
-            pass     
+    if detected_lang not in ["en", "fr", "ru"]:
+        detected_lang = detect_language(single_word)   
 
     template: str = PROMPT_TEMPLATES.get(detected_lang, "This word is {word}.")
     prompt: str = template.format(word=single_word) 

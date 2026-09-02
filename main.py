@@ -23,6 +23,7 @@ from collections import Counter
 from config import BASE_DIR, ERROR_MESSAGES_EN, ERROR_MESSAGES_RU, settings, logger
 from database import *
 from game import Game
+from hints import fill_hints_cache, manage_hint
 from lang import detect_language
 from models import CategoryOrm
 from schemas import GuessRequest, GuessResponse, HintCache, NewUser, User, UserInfo, WordsDataInfo

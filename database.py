@@ -1,16 +1,14 @@
 import asyncio
 from datetime import datetime
 
-from fastapi import Depends, HTTPException, Request
-from openai import AsyncOpenAI
+from fastapi import Depends, HTTPException
 from sqlalchemy import URL, insert, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from typing import Annotated, cast
+from typing import Annotated
 # from llama_cpp import Llama
 from game import Game
 from models import Base, WordOrm
-from schemas import HintCache, HintResponse
 from config import settings, logger
 
 
@@ -32,6 +30,7 @@ async def get_session():
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
+background_tasks_pool = set()
 # ---------------------------------------------------------------------------------------------------------------------------
 
 async def db_connection_check() -> None:
@@ -223,7 +222,7 @@ async def join_the_player(game: Game, userid: int, language: str, session: Sessi
                 return {"result": False, "reason": "GAME_FINISHED"}
         else:
             logger.info(f"User {userid} is NOT joined to game {game_id} - START joining!")
-            #  Only HE FIRST player joined the game can define the next game language (next secret word language) 
+            #  Only THE FIRST player joined the game can define the next game language (next secret word language) 
             # sql = text("SELECT count(*) AS cnt FROM players WHERE gameid = :gameid")
             # result = await session.execute(sql, {"gameid": game_id})
             # row = result.first()
@@ -292,6 +291,7 @@ async def the_game_state_update(userid: int, game_id: int, word: str, secret_wor
 
 
 async def create_new_game(session_factory: async_sessionmaker, app_state, force: bool) -> bool:
+    ret_result: bool = False 
     language: str = settings.language
     app_state.language = language
     game_lock = app_state.process_lock
@@ -323,10 +323,9 @@ async def create_new_game(session_factory: async_sessionmaker, app_state, force:
                     finish_query = text("UPDATE games SET finished=LOCALTIMESTAMP WHERE finished IS NULL AND EXTRACT(EPOCH FROM (LOCALTIMESTAMP - started))::INTEGER > 10  RETURNING id")
                 result = await session.execute(finish_query)
                 old_game_id = result.scalar()
+                logger.info(f"Текущая (старая) игра {old_game_id} завершена!")
+
                 if old_game_id or force:
-                    finish_query = text("DELETE FROM players WHERE gameid < :gameid - 1")
-                    await session.execute(finish_query, {"gameid": old_game_id})
-                    logger.info(f"Текущая (старая) игра {old_game_id} завершена!")
                     # Фиксируем НОВУЮ игру в таблице games
                     insert_game_query = text("INSERT INTO games (secret_word_id, language) VALUES (:word_id, :lang)  RETURNING id")
                     result = await session.execute(insert_game_query, {"word_id": word_data.id, "lang": language})
@@ -336,15 +335,31 @@ async def create_new_game(session_factory: async_sessionmaker, app_state, force:
 
                 if new_game_id:
                     logger.success(f"ํНовая игра {new_game_id} создана!")        
-                    # await fill_hints_cache(new_game_id, word_data.word, language, session, app_state)
-                    return True
+                    ret_result = True
                 else:
                     logger.warning(f"Нельзя завершить игру {old_game_id}, которая только-что началась!")
-                    return False
+                    ret_result = False
             except Exception as e:
                 await session.rollback() 
                 logger.exception("Ошибка при создании новой игры!")
                 return False
+    # Создаем асинхронную задачу удаления старых игроков
+    task = asyncio.create_task(erase_old_players(old_game_id))
+    background_tasks_pool.add(task)    
+    task.add_done_callback(background_tasks_pool.discard)
+            
+    return ret_result 
+
+
+async def erase_old_players(old_game_id: int) -> bool:
+    async with new_session() as session: 
+        try:
+            await session.execute(text("DELETE FROM players WHERE gameid < :gameid - 1"), {"gameid": old_game_id})
+            await session.commit()
+            return True    
+        except Exception as e:
+            logger.exception("Ошибка удалении старых игроков!")
+            return False
 
 
 # async def get_the_game_statistic(userid, session: SessionDep):    
@@ -397,39 +412,10 @@ async def check_the_game_duration(session_factory: async_sessionmaker, app_state
     #         result = await session.execute(query, {"seconds": (settings.game_duration - 10)})
     #         row = result.first()
     #         if row:
-    #             found = True    
-      
+    #             found = True      
     if currentGame.getTimeLeft() < 10:
         logger.success(f"Найдена 'устаревшая' игра !!!  {settings.game_duration}")
         await create_new_game(session_factory, app_state, False)  
-
-
-def manage_hint(gameid: int, userid: int, request: Request) -> HintResponse:  
-    #sql = text("SELECT count(*) as cnt FROM sessions s INNER JOIN players p ON p.id=s.playerid INNER JOIN games g ON g.id=p.gameid WHERE p.userid = :userid AND p.gameid = :gameid AND g.finished IS NULL")
-    #res = await session.execute(sql, {"userid": userid, "gameid": gameid})
-    #row = res.first()
-    level: int = 0
-    game: Game = request.app.state.game
-    attempts = game.getUserAttempts(userid)
-
-    if attempts < 1: 
-        return HintResponse(result="NO", first_letter="", second_letter="", last_letter="", analogues=[], anagram="", ai="")
-
-    hintResponse: HintResponse = get_hints_from_cache(request, attempts) 
-
-    if attempts > 0 and attempts < 13:
-        if attempts < 21 or len(hintResponse.analogues) > 1 or hintResponse.second_letter != "":
-            # sql = text("UPDATE players SET hints=:hints WHERE userid = :userid AND gameid = :gameid AND hints < :hints;")
-            if attempts == 1:
-                level = 1
-            else:    
-                level = 1 + (attempts // 3) 
-            # await session.execute(sql, {"userid": userid, "gameid": gameid, "hints": level})
-            # await session.commit() 
-            game.addHints(userid, level)
-            logger.info(f"ํПользователем {userid} в игре {gameid} запрошено {level} подсказок")  
-
-    return hintResponse     
 
 
 async def get_players_stats (session: SessionDep):
@@ -442,120 +428,6 @@ async def get_players_stats (session: SessionDep):
     """)
     res = await session.execute(sql)
     return res.mappings().all()
-
-
-def get_hints_from_cache(request, level: int) -> HintResponse:
-    first_letter: str = ""  
-    second_letter: str = ""  
-    last_letter: str = ""  
-    analogues: list = []
-    anagram: str = ""
-    ai = ""
-    result: str = "NO"
-    hint_cache: HintCache = request.app.state.stored_hint 
-    logger.info(hint_cache)
-
-    if level > 0:
-        first_letter = hint_cache.first_letter  
-        logger.info(f"Первая подсказка '{first_letter}' получена из кэша")
-        result = "YES"
-    
-    if level > 2:
-        last_letter = hint_cache.last_letter
-        logger.info(f"Вторая подсказка  '{last_letter}' получена из кэша")
-
-    if level > 5: 
-        analogues = hint_cache.analogues
-        logger.info(f"Третья подсказка {str(analogues)} получена из кэша")
-        if hint_cache.size > 3 and len(analogues) < 1:   
-            second_letter = hint_cache.second_letter 
-        if len(analogues) < 1 and second_letter == "": 
-            ai = hint_cache.ai
-    
-    if level > 8:
-        if ai == "": 
-            ai = hint_cache.ai
-        else: 
-            anagram = hint_cache.anagram
-        logger.info(f"Четвертая подсказка '{ai}' получена из кэша")
-
-    if level > 11 and anagram == "":     
-        anagram = hint_cache.anagram
-        logger.info(f"ПЯТАЯ подсказка '{ai}' получена из кэша")
-
-    return HintResponse(result=result, first_letter=first_letter, second_letter=second_letter, last_letter=last_letter, analogues=analogues, anagram=anagram, ai=ai)
-
-
-
-async def fill_hints_cache(gameid: int, word: str, app_state, session_factory: async_sessionmaker):
-    language = app_state.language
-    hint_cache: HintCache = app_state.stored_hint
-    hint_cache.gameid = gameid
-    hint_cache.word = word
-    hint_cache.first_letter = word[0].upper() 
-    hint_cache.last_letter = word[-1].upper() 
-    hint_cache.second_letter = word[1].upper()
-    hint_cache.analogues = []
-    hint_cache.ai = ""
-    hint_cache.anagram = "".join(sorted(word))
-    hint_cache.size = len(word)
-    hint_cache.result = "YES"
-
-    if language != "ru":
-        async with session_factory() as session:         
-            sql = text("""SELECT DISTINCT T.word FROM (
-                SELECT w.word 
-                FROM words w   
-                WHERE w.language=:lang AND w.word != :word0 
-                AND (w.embedding <=> (SELECT z.embedding FROM words z WHERE z.word=:word1 LIMIT 1)) < 0.40 AND w.word != 'word' 
-                ORDER BY (w.embedding <=> (SELECT z.embedding FROM words z WHERE z.word=:word2 LIMIT 1)) 
-                LIMIT 3     
-            ) T;""")
-            res = await session.execute(sql, {"lang": language, "word0": word, "word1": word, "word2": word})
-            words_list = list(res.scalars().all())
-            if words_list:
-                hint_cache.analogues = words_list 
-
-    if app_state.ai_enabled:    
-        hint_cache.ai = await create_ai_description(word, language, app_state)   
-    else:
-        logger.warning("Модель ИИ НЕ инициализирована!")    
-
-
-async def create_ai_description(word: str, language: str, app_state) -> str:
-    llm = cast(AsyncOpenAI, app_state.llm)
-
-    imperativ:str = "Ты - ведущий в игре 'Угадай слово'. Твоя задача: Дать краткое (1-2 предложения) описание слова для игроков, которое поможет им угадать это слово, НИ В КОЕМ СЛУЧАЕ не называя это загаданное слово или однокоренные с ним слова."
-    prompt:str = f"Загаданное слово: {word}. Дай описание слова."
-    if language == "en":
-        imperativ = "You are the host of the game «Guess the Word». Your task: Give a short (1-2 sentences) description of the word to the players, which will help them guess it. Under NO CIRCUMSTANCES do you mention the hidden word or words with the same root as it."
-        prompt = f"The word is «{word}» Describe the word."
-    else:
-        if language == "fr":
-            imperativ = "Vous êtes l'animateur du jeu « Devinez le mot ». Votre mission : donner aux joueurs une brève description (1 à 2 phrases) du mot à deviner. Vous ne devez en aucun cas mentionner le mot caché ni aucun mot ayant la même racine."
-            prompt = f"Le mot est « {word} ». Décrivez ce mot."
-
-    response = await llm.chat.completions.create(
-        model="GLM-5.2", 
-        temperature=0.7,
-        max_tokens=500,
-        extra_body={"thinking": {"type": "disabled"}}, 
-        messages=[
-            {
-                "role": "system",
-                "content": (imperativ)
-            },
-            {"role": "user", "content": prompt}
-        ]
-    )
-    logger.warning(f"обращение к АПИ модели GLM-5.2 !!!  Язык: {language}")
-    content = response.choices[0].message.content
-       
-    if content is None:
-        return "😔"
-    else: 
-        return content.strip().replace(word, "*" * len(word))
-        
 
 
 async def delete_user(userName: str, session: SessionDep) -> bool:

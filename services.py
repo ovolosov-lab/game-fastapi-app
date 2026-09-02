@@ -5,14 +5,11 @@ import json
 import os
 from typing_extensions import Annotated
 from fastapi.responses import RedirectResponse
-from fastapi import File, Form, HTTPException, Request, Response
-from fastapi.concurrency import run_in_threadpool
+from fastapi import Form, HTTPException, Request, Response
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy import TextClause, delete, text
-from sqlalchemy import select, cast
 from models import UserOrm
-from database import SessionDep, check_user, db_add_record, user_exists
-from config import BASE_DIR, ERROR_MESSAGES_EN, ERROR_MESSAGES_RU, settings, logger
+from database import SessionDep, check_user
+from config import BASE_DIR, ERROR_MESSAGES_EN, ERROR_MESSAGES_RU, logger
 from schemas import NewUser
 from tokens import create_access_token, get_current_user
 import urllib.parse
@@ -131,7 +128,7 @@ def verify_telegram_data(init_data: str, bot_token: str) -> dict:
     expected_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
     
     if received_hash != expected_hash:
-        raise HTTPException(status_code=401, detail="Invalid Telegram signature")
-        
+        raise HTTPException(status_code=401, detail="Invalid Telegram signature")  
     return parsed_data
+
 
