@@ -325,7 +325,7 @@ async def make_guess(
 
             success_treshold: float = SUCCESS_THRESHOLD_PERCENT
             if guessing_lang == game_data.language: 
-                success_treshold = 98.0 
+                success_treshold = 98.2 
 
             is_correct = similarity_percent >= success_treshold
             if is_correct:

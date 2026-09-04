@@ -15,7 +15,7 @@ from lang import create_word_prompt
 
 WORD_LISTS_DIR: str = "data"
 BATCH_SIZE: int = 256 
-SUCCESS_THRESHOLD_PERCENT: float = 86.7
+SUCCESS_THRESHOLD_PERCENT: float = 86.1
 
 #nltk.download('wordnet')
 
