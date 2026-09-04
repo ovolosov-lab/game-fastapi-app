@@ -45,13 +45,12 @@ class PlayerOrm(Base):
         UniqueConstraint('gameid', 'userid', name='uq_game_user'),
     )
     
-
-class SessionOrm(Base):
-    __tablename__ = "sessions" 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)      
-    playerid: Mapped[int] = mapped_column(ForeignKey('players.id', ondelete="CASCADE"), index=True) 
-    word: Mapped[str] = mapped_column(String(50))
-    similarity_score: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+#class SessionOrm(Base):
+#    __tablename__ = "sessions" 
+#    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)      
+#    playerid: Mapped[int] = mapped_column(ForeignKey('players.id', ondelete="CASCADE"), index=True) 
+#    word: Mapped[str] = mapped_column(String(50))
+#    similarity_score: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
 
 
 class WordOrm(Base):
@@ -83,13 +82,7 @@ class WinnerOrm(Base):
     __table_args__ = (
         UniqueConstraint('userid', 'gameid', name='uq_winner_userid_gameid'),
     )
-
-    
-class DescriptOrm(Base):
-    __tablename__ = "descriptions"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)   
-    word: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
-    description: Mapped[str] = mapped_column(String(2000))
+   
 
 class CategoryOrm(Base):
     __tablename__ = "categories"

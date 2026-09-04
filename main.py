@@ -308,7 +308,7 @@ async def make_guess(
 
             similarity_percent = max(0.0, min(100.0, (1.0 - cos_distance) * 100.0))
 
-            if request.app.state.language == 'ru' and guessing_lang == 'ru' and similarity_percent > 60 and similarity_percent < 93: 
+            if game_data.language == 'ru' and guessing_lang == 'ru' and similarity_percent > 60 and similarity_percent < 93: 
                 common_counter = Counter(payload.word) & Counter(game_data.secret_word)
                 total_common = sum(common_counter.values())
                 avg_len = (len(payload.word) + len(game_data.secret_word)) / 2
@@ -335,6 +335,9 @@ async def make_guess(
         await the_game_state_update(current_user.userid, game_data.game_id, payload.word, game_data.secret_word, similarity_percent, session, request.app.state.game)
 
         attempts = player_data["attempts"] + 1
+
+        if is_correct:
+            payload.word = game_data.secret_word
 
         return GuessResponse(status = "OK", word = payload.word, similarity = round(similarity_percent, 0), is_correct = is_correct, attempts = attempts, reason = "")
     else:
