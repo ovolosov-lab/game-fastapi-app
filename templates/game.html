@@ -615,7 +615,8 @@
                                     replics['cold'].push(fi_le_hlp.replace("{hint}", data.first_letter.toUpperCase()))        
                                 }
 
-                                wordInput.value = data.first_letter.toLowerCase();
+                                wordInput.value = "";
+                                wordInput.placeholder = data.first_letter.toLowerCase() + "_".repeat(word_len - 1);
                             }
 
                             if (data.last_letter != "") {
