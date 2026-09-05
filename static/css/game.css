@@ -161,7 +161,7 @@ body.dark-theme #guess-form button:hover {
   cursor: pointer;
 }
 
-#word-input { letter-spacing: 1px; }
+#word-input { letter-spacing: 1.7px; }
 #word-input::placeholder {
   color: #014bd4; 
 }
