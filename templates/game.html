@@ -394,7 +394,7 @@
                 });
 
                 if (response.status === 401) {
-                    console.log('Пользователь не авторизован! Перенаправляем на логин...');
+                    console.log('User not authorized! Redirecting to login...');
                     window.location.href = '/';
                     return; 
                 }                
@@ -515,7 +515,7 @@
                 });
 
                 if (response.status === 401) {
-                    console.log('Пользователь не авторизован! Перенаправляем на логин...');
+                    console.log('User not authorized! Redirecting to login...');
                     window.location.href = '/';
                     return; 
                 }                
@@ -612,6 +612,12 @@
                         method: 'GET',
                         credentials: 'include'
                     });
+                    if (response.status === 401) {
+                        console.log('User not authorized! Redirecting to login...');
+                        window.location.href = '/';
+                        return; 
+                    }                
+
                     const data = await response.json();
                     if (data) {
                         console.log(data);
@@ -798,6 +804,12 @@
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include'
                 });
+
+                if (response.status === 401) {
+                    console.log('User not authorized! Redirecting to login...');
+                    window.location.href = '/';
+                    return; 
+                }                
 
                 const data = await response.json();
                
