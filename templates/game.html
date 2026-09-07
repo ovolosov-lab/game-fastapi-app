@@ -392,6 +392,12 @@
                     body: JSON.stringify({ level: gameLevel.checked }),
                     credentials: 'include'
                 });
+
+                if (response.status === 401) {
+                    console.log('Пользователь не авторизован! Перенаправляем на логин...');
+                    window.location.href = '/';
+                    return; 
+                }                
                 
                 const data = await response.json();
                 
@@ -507,6 +513,12 @@
                     }),
                     credentials: 'include'
                 });
+
+                if (response.status === 401) {
+                    console.log('Пользователь не авторизован! Перенаправляем на логин...');
+                    window.location.href = '/';
+                    return; 
+                }                
 
                 const data = await response.json();
 

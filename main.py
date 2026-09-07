@@ -421,12 +421,20 @@ async def get_the_help(request: Request, game_id: int, session: SessionDep, curr
 
 
 @app.exception_handler(HTTPException)
-async def custom_http_exception_handler(conn: ConnectionAbortedError, exc: HTTPException):
+async def custom_http_exception_handler(request: Request, exc: HTTPException):
     if exc.status_code == 401:
-        logger.info(exc.detail if exc.detail else "Error occurred during user authentication. Redirecting to '/'")
-        response = RedirectResponse(url="/", status_code=303)
-        response.set_cookie(key="flash_msg", value=quote(exc.detail if exc.detail else "Please login first"), httponly=True)
-        return response 
+        logger.warning(f"HTTP Exception: status=401, detail={exc.detail}")
+        content_type = request.headers.get("content-type", "")
+        if "application/json" in content_type:
+            return JSONResponse(
+                status_code=exc.status_code,
+                content={"error": "401", "detail": exc.detail}
+            )        
+        else:
+            logger.info("Error occurred during user entering the game. Redirecting to '/'")
+            response = RedirectResponse(url="/", status_code=303)
+            response.set_cookie(key="flash_msg", value=quote(exc.detail if exc.detail else "Please login first"), httponly=True)
+            return response 
 
 
 @app.exception_handler(RequestValidationError)
