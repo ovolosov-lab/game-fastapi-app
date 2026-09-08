@@ -15,6 +15,9 @@ data/qwen2.5-0.5b-instruct-q4_k_m.gguf
 models/
 *.gguf
 
+data/models_cache/*
+!data/models_cache/.gitkeep
+
 # Docker
 .dockerignore
 *.log
