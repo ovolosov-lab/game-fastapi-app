@@ -50,7 +50,8 @@ async def lifespan(app: FastAPI):
 
     logger.info("Загрузка ML моделей...")
     app.state.embedder = TextEmbedding(
-        model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+        model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2", 
+        cache_dir=os.path.join(BASE_DIR, "data", "models_cache")    
     )
 
     try:
@@ -73,6 +74,7 @@ async def lifespan(app: FastAPI):
     yield
 
     await periodic_task.stop()
+    await erase_old_players(app.state.game.id)
     await engine.dispose()
 
     if app.state.ai_enabled:
@@ -332,7 +334,7 @@ async def make_guess(
                 similarity_percent = 100
 
         # Обновляем состояние игры
-        await the_game_state_update(current_user.userid, game_data.game_id, payload.word, game_data.secret_word, similarity_percent, session, request.app.state.game)
+        await the_game_state_update(current_user.userid, game_data.game_id, payload.word, game_data.secret_word, similarity_percent, session, request.app.state)
 
         attempts = player_data["attempts"] + 1
 

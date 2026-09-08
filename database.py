@@ -252,8 +252,9 @@ async def join_the_player(game: Game, userid: int, language: str, session: Sessi
         raise HTTPException(status_code=500, detail="Internal error while adding player to the game")
 
 
-async def the_game_state_update(userid: int, game_id: int, word: str, secret_word:str, similarity_percent: float, session: SessionDep, game: Game) -> bool:
+async def the_game_state_update(userid: int, game_id: int, word: str, secret_word:str, similarity_percent: float, session: SessionDep, app_state) -> bool:
     enddate:datetime|None = None
+    game:Game = app_state.game
     try:
         game.addUAttempt(userid)
 
@@ -276,13 +277,15 @@ async def the_game_state_update(userid: int, game_id: int, word: str, secret_wor
         else:    
             sql_query = text("UPDATE players SET attempts=attempts+1 WHERE userid=:userid AND gameid=:gameid")
         await session.execute(sql_query, {"userid": userid, "gameid": game_id})
-
-        #if similarity_percent <= 99.0:
-        #    sql_query = text("INSERT INTO sessions(playerid, word, similarity_score) SELECT :playerid, :word, :similarity_score")
-        #    await session.execute(sql_query, {"playerid": player_id, "word": word, "similarity_score": similarity_percent})
         
         await session.commit()
         logger.success("Данные очередного хода успешно записаны в БД")
+
+        if game.id == 0:
+            task = asyncio.create_task(create_new_game(new_session, app_state, False, False))
+            background_tasks_pool.add(task)    
+            task.add_done_callback(background_tasks_pool.discard)
+
         return True
     except Exception as e:
         await session.rollback() 
@@ -290,7 +293,7 @@ async def the_game_state_update(userid: int, game_id: int, word: str, secret_wor
         raise HTTPException(status_code=500, detail="Ошибка записи в БД данных очередного хода")
 
 
-async def create_new_game(session_factory: async_sessionmaker, app_state, force: bool) -> bool:
+async def create_new_game(session_factory: async_sessionmaker, app_state, force: bool, extTasks: bool = True) -> bool:
     ret_result: bool = False 
     language: str = settings.language
     app_state.language = language
@@ -351,10 +354,11 @@ async def create_new_game(session_factory: async_sessionmaker, app_state, force:
                 await session.rollback() 
                 logger.exception("Ошибка при создании новой игры!")
                 return False
-    # Создаем асинхронную задачу удаления старых игроков
-    task = asyncio.create_task(erase_old_players(old_game_id))
-    background_tasks_pool.add(task)    
-    task.add_done_callback(background_tasks_pool.discard)
+    if extTasks:        
+        # Создаем асинхронную задачу удаления старых игроков
+        task = asyncio.create_task(erase_old_players(old_game_id))
+        background_tasks_pool.add(task)    
+        task.add_done_callback(background_tasks_pool.discard)
             
     return ret_result 
 
@@ -423,7 +427,7 @@ async def check_the_game_duration(session_factory: async_sessionmaker, app_state
     #             found = True      
     if currentGame.getTimeLeft() < 10:
         logger.success(f"Найдена 'устаревшая' игра !!!  {settings.game_duration}")
-        await create_new_game(session_factory, app_state, False)  
+        await create_new_game(session_factory, app_state, False, True)  
 
 
 async def get_players_stats (session: SessionDep):
